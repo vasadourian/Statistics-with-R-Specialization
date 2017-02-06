@@ -1,0 +1,485 @@
+---
+title: "Statistical inference with the GSS data"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+library(statsr)
+library(magrittr)
+library(zoo)
+```
+
+### Load data
+
+
+```{r load-data}
+load("gss.Rdata")
+```
+
+
+
+* * *
+
+## Part 1: Data
+Per the GSS website (gss.norc.org):
+The General Social Survey (GSS) gathers data on contemporary American society in order to monitor and explain trends and constants in attitudes, behaviors, and attributes.  Hundreds of trends have been tracked since 1972. In addition, since the GSS adopted questions from earlier surveys, trends can be followed for up to 70 years.
+
+The GSS contains a standard core of demographic, behavioral, and attitudinal questions, plus topics of special interest. Among the topics covered are civil liberties, crime and violence, intergroup tolerance, morality, national spending priorities, psychological well-being, social mobility, and stress and traumatic events.
+
+The survey was originally modelled to be a modified probability sample, and was executed this was from 1972 through 1974. It was then decided that the survey would follow a full probability sample design. The 1975 and 1976 studies were conducted with a transitional sample design. From 1977 on, the survey has been a full probability sample.
+
+The sample is a multi-stage area probability sample to the block or segment level. At the block level, however, quota sampling is used with quotas based on sex, age, and employment status. The cost of the quota samples is substantially less than the cost of a full probability sample of the same size, but there is, of course, the chance of sample biases mainly due to not-at-homes
+which are not controlled by the quotas. However, in order to reduce this bias, the interviewers are given instructions to canvass and interview only after 3:00 p.m. on weekdays or during the weekend or holidays. This type of sample design is most appropriate when
+the past experience and judgment of a project director suggest that sample biases are likely to be small relative to the precision of the measuring instrument and the decisions that are to be made.
+
+Causality cannot be inferred. Only correlations can be drawn. 
+
+
+* * *
+
+## Part 2: Research question
+
+Is there a correlation between gender and attitudes toward a woman's right to have an abortion for any reason? And is there an correlation between attitudes toward a woman's right to have an abortion for any reason and attitudes toward homosexual relations?
+
+I chose these questions because they reflect issues that have long been contentious in society. I wanted to track the change in the public's attitudes regarding these issues throughout the decades. I also wanted to see if my intuitions matched my results.
+
+Also, one note: I emphasize the denotion "for any reason". This sets the variable I use apart from others which ask similar but distinct questions, e.g. "does a woman have the right to have an abortion if she is single".
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+After loading the libraries and the data, I'll start by creating the dataframes I'll need to parse the data by decade and by gender with regard to attitude toward abortion.
+
+The variables of interest are year, sex, and `abany` ("Do you support a woman's right to have an abortion for any reason?" With levels of "yes" and "no").
+```{r}
+## DECADE DATAFRAMES
+dec_70 <- subset(gss,year > 1972 & year < 1980)
+dec_80 <- subset(gss,year > 1979 & year < 1990)
+dec_90 <- subset(gss,year > 1989 & year < 2000)
+dec_2k <- subset(gss,year > 1999 & year < 2010)
+dec_2k10 <- subset(gss,year > 2009 & year < 2013)
+
+## ABORTION DATAFRAMES
+abany_nonNA <- subset(gss, !is.na(abany))
+
+m_ab_y <- subset(gss, sex == "Male" & abany == "Yes")
+m_ab_n <- subset(gss, sex == "Male" & abany == "No")
+
+f_ab_y <- subset(gss, sex == "Female" & abany == "Yes")
+f_ab_n <- subset(gss, sex == "Female" & abany == "No")
+
+ab_y <- subset(gss, abany == "Yes")
+ab_n <- subset(gss, abany == "No")
+
+homo_ab_nonNA <- subset(gss, !is.na(abany))
+homo_ab_nonNA <- subset(homo_ab_nonNA, !is.na(homosex)) %>% mutate(homo_acc = ifelse(homosex == "Not Wrong At All", "not wrong", "wrong"))
+
+## PROPORTIONS-1
+# 70-m-y
+m70y <- length(which(dec_70$sex == "Male" & dec_70$abany == "Yes")) #[1] 474
+# 70-m-n
+m70n <- length(which(dec_70$sex == "Male" & dec_70$abany == "No")) #[1] 810
+# 70-f-y
+f70y <- length(which(dec_70$sex == "Female" & dec_70$abany == "Yes")) #[1] 578
+# 70-f-n
+f70n <- length(which(dec_70$sex == "Female" & dec_70$abany == "No")) #[1] 1101
+
+# 80-m-y
+m80y <- length(which(dec_80$sex == "Male" & dec_80$abany == "Yes")) #[1] 1893
+# 80-m-n
+m80n <- length(which(dec_80$sex == "Male" & dec_80$abany == "No")) #[1] 2894
+# 80-f-y
+f80y <- length(which(dec_80$sex == "Female" & dec_80$abany == "Yes")) #[1] 2393
+# 80-f-n
+f80n <- length(which(dec_80$sex == "Female" & dec_80$abany == "No")) #[1] 4057
+
+# 90-m-y
+m90y <- length(which(dec_90$sex == "Male" & dec_90$abany == "Yes")) #[1] 1624
+# 90-m-n
+m90n <- length(which(dec_90$sex == "Male" & dec_90$abany == "No")) #[1] 2010
+# 90-f-y
+f90y <- length(which(dec_90$sex == "Female" & dec_90$abany == "Yes")) #[1] 2062
+# 90-f-n
+f90n <- length(which(dec_90$sex == "Female" & dec_90$abany == "No")) #[1] 2675
+
+# 2k-m-y
+m2ky <- length(which(dec_2k$sex == "Male" & dec_2k$abany == "Yes")) #[1] 1304
+# 2k-m-n
+m2kn <- length(which(dec_2k$sex == "Male" & dec_2k$abany == "No")) #[1] 1764
+# 2k-f-y
+f2ky <- length(which(dec_2k$sex == "Female" & dec_2k$abany == "Yes")) #[1] 1468
+# 2k-f-n
+f2kn <- length(which(dec_2k$sex == "Female" & dec_2k$abany == "No")) #[1] 2222
+
+## PROPORTIONS-2
+#70s
+prop_m70y <- m70y/(m70y+m70n)
+#[1] 0.3691589
+prop_m70n <- 1-prop_m70y
+prop_f70y <- f70y/(f70y+f70n)
+#[1] 0.3442525
+prop_f70n <- 1 - prop_f70y
+
+prop70m <- c(prop_m70y, prop_m70n)
+prop70f <- c(prop_f70y, prop_f70n)
+
+#80s
+prop_m80y <- m80y/(m80y+m80n)
+#[1] 0.395446
+prop_m80n <- m80n/(m80y+m80n)
+prop_f80y <- f80y/(f80y+f80n)
+#[1] 0.3710078m_ab_y <- subset(gss, sex == "Male" & abany == "Yes")
+m_ab_n <- subset(gss, sex == "Male" & abany == "No")
+
+f_ab_y <- subset(gss, sex == "Female" & abany == "Yes")
+f_ab_n <- subset(gss, sex == "Female" & abany == "No")
+
+prop_f80n <- f80n/(f80y+f80n)
+
+prop80m <- c(prop_m80y, prop_m80n)
+prop80f <- c(prop_f80y, prop_f80n)
+
+#90s
+prop_m90y <- m90y/(m90y+m90n)
+#[1] 0.4468905
+prop_m90n <- m90n/(m90y+m90n)
+prop_f90y <- f90y/(f90y+f90n)
+#[1] 0.4352966
+prop_f90n <- f90n/(f90y+f90n)
+
+prop90m <- c(prop_m90y, prop_m90n)
+prop90f <- c(prop_f90y, prop_f90n)
+
+#00s
+prop_m2ky <- m2ky/(m2ky+m2kn)
+#[1] 0.4250326
+prop_m2kn <- m2kn/(m2ky+m2kn)
+prop_f2ky <- f2ky/(f2ky+f2kn)
+#[1] 0.397832
+prop_f2kn <- f2kn/(f2ky+f2kn)
+
+prop2km <- c(prop_m2ky, prop_m2kn)
+prop2kf <- c(prop_f2ky, prop_f2kn)
+
+## NOTE: max(gss$year) returns 2012.
+
+lbls <- c("yes","no")
+
+## Pie Chart - 70s 
+pct70m <- round(prop70m/sum(prop70m)*100)
+lbls70m <- paste(lbls,pct70m)
+lbls70m <- paste(lbls70m, "%", sep="")
+
+pct70f <- round(prop70f/sum(prop70f)*100, digits=2)
+lbls70f <- paste(lbls,pct70f)
+lbls70f <- paste(lbls70f, "%", sep="")
+
+## Pie Chart - 80s
+pct80m <- round(prop80m/sum(prop80m)*100, digits=2)
+lbls80m <- paste(lbls,pct80m)
+lbls80m <- paste(lbls80m, "%", sep="")
+
+pct80f <- round(prop80f/sum(prop80f)*100, digits=2)
+lbls80f <- paste(lbls,pct80f)
+lbls80f <- paste(lbls80f, "%", sep="")
+
+## Pie Chart - 90s
+pct90m <- round(prop90m/sum(prop90m)*100, digits=2)
+lbls90m <- paste(lbls,pct90m)
+lbls90m <- paste(lbls90m, "%", sep="")
+
+pct90f <- round(prop90f/sum(prop90f)*100, digits=2)
+lbls90f <- paste(lbls,pct90f)
+lbls90f <- paste(lbls90f, "%", sep="")
+
+## Pie Chart - 00s
+pct2km <- round(prop2km/sum(prop2km)*100, digits=2)
+lbls2km <- paste(lbls,pct2km)
+lbls2km <- paste(lbls2km, "%", sep="")
+
+pct2kf <- round(prop2kf/sum(prop2kf)*100, digits=2)
+lbls2kf <- paste(lbls,pct2kf)
+lbls2kf <- paste(lbls2kf, "%", sep="")
+
+```
+
+To explore the data through visualizations, I've created a series of pie charts that represent men's and women's, respectively, attitude toward abortion. We see that the numbers are not very dissimilar, with the "yes" propotions peaking in the 1990s. My intuition led me to believe that the "yes" proportion would continually rise, but this was shown to be not true.
+
+```{r}
+par(mfrow=c(1,2))
+pie(prop70m,labels=lbls70m, col=rainbow(length(lbls70m)), main="Support woman's right \nto abortion for any reason? \n(Polled: Men, 1970s)")
+pie(prop70f,labels=lbls70f, col=rainbow(length(lbls70f)), main="Support woman's right \nto abortion for any reason? \n(Polled: Women, 1970s)")
+
+par(mfrow=c(1,2))
+pie(prop80m,labels=lbls80m, col=rainbow(length(lbls80m)), main="Support woman's right \nto abortion for any reason? \n(Polled: Men, 1980s)")
+pie(prop80f,labels=lbls80f, col=rainbow(length(lbls80f)), main="Support woman's right \nto abortion for any reason? \n(Polled: Women, 1980s)")
+
+par(mfrow=c(1,2))
+pie(prop90m,labels=lbls90m, col=rainbow(length(lbls90m)), main="Support woman's right \nto abortion for any reason? \n(Polled: Men, 1990s)")
+pie(prop90f,labels=lbls90f, col=rainbow(length(lbls90f)), main="Support woman's right \nto abortion for any reason? \n(Polled: Women, 1990s)")
+
+par(mfrow=c(1,2))
+pie(prop2km,labels=lbls2km, col=rainbow(length(lbls2km)), main="Support woman's right \nto abortion for any reason? \n(Polled: Men, 2000s)")
+pie(prop2kf,labels=lbls2kf, col=rainbow(length(lbls2kf)), main="Support woman's right \nto abortion for any reason? \n(Polled: Women, 2000s)")
+```
+
+Next, I'll calculate the proportions of men and women for each response to abany. These calculations will be over the years 1977-2012, as opposed to the decade segments above. A barplot will follow to visualize the proportions.
+
+```{r}
+m_ab_total <- length(which(gss$sex == "Male" & (gss$abany == "Yes" | gss$abany == "No")))
+f_ab_total <- length(which(gss$sex == "Female" & (gss$abany == "Yes" | gss$abany == "No")))
+
+m_ab_proportions <- c( length(which(gss$sex == "Male" & gss$abany == "Yes")) / m_ab_total, length(which(gss$sex == "Male" & gss$abany == "No")) / m_ab_total) 
+f_ab_proportions <- c( length(which(gss$sex == "Female" & gss$abany == "Yes")) / f_ab_total, length(which(gss$sex == "Female" & gss$abany == "No")) / f_ab_total) 
+
+total_ab_proportions <- rbind(m_ab_proportions,f_ab_proportions)
+
+barplot(total_ab_proportions, beside=TRUE, ylim=c(0,1), names.arg = c("Yes","No"), col = c("darkblue", "red"), legend = c("Male", "Female"), args.legend = list(x="top"), main = "Support a woman's right to\nan abortion for any reason?\n(1977-2012)", ylab = "proportion", xlab = "sentiment", las=2)
+```
+
+Below I'll calculate the individual year proportions for men's and women's attitudes toward a woman being allowed to chose to have an abortion for any reason. I'll use this data to produce a line plot visualization with separate lines for men and women.
+
+```{r}
+## Total proportions
+prop_male <- (prop_m70y + prop_m80y + prop_m90y + prop_m2ky) / 4 #[1] 0.409132
+prop_female <- (prop_f70y + prop_f80y + prop_f90y + prop_f2ky) / 4 #[1] 0.3870972
+```
+
+
+```{r}
+years_m <- c()
+years_f <- c()
+
+for (i in seq(from=1977, to=2012, by=1)) {
+  years_m[i] <- length(which( (abany_nonNA$year == i & abany_nonNA$sex == "Male" & abany_nonNA$abany == "Yes") )) / length(which(abany_nonNA$year == i & abany_nonNA$sex == "Male"))
+}
+
+for (i in seq(from=1977, to=2012, by=1)) {
+  years_f[i] <- length(which( (abany_nonNA$year == i & abany_nonNA$sex == "Female" & abany_nonNA$abany == "Yes") )) / length(which(abany_nonNA$year == i & abany_nonNA$sex == "Female"))
+  }
+
+years2 <- c("1977", "1978","1979",
+"1980","1981","1982","1983","1984","1985","1986","1987","1988","1989",
+"1990","1991","1992","1993","1994","1995","1996","1997","1998","1999",
+"2000","2001","2002","2003","2004","2005","2006","2007","2008","2009",
+"2010","2011","2012")
+```
+
+
+
+```{r}
+## years with NaN, same for male and female:
+#  1979,1981,1986,1992,1995,1997,1999,2001,2003,2005,2007,2009,2011
+
+plot(na.approx(years_m), type="l", xlab="year", xaxt="n",col="darkblue", ylim=c(.30,.50), ylab="proportion", main = "Proportion of men and women who\nsupport a woman's right to abortion\nfor any reason (1977 - 2012)")
+lines(na.approx(years_f), col="red")
+axis(1, at=1:36, labels=years2)
+legend("bottomright", title="Gender", c("Male","Female"), fill=c("darkblue","red"))
+```
+
+This is a very informative visualization for relating the trend of men's and women's attitudes over many years.
+
+One thing to note is that there were a number of years where data was missing. To compensate for this, I used the `na.approx` function to interpolate values.
+
+The years missing data are: 1979,1981,1986,1992,1995,1997,1999,2001,2003,2005,2007,2009,2011. These apply both to men's and women's data.
+
+
+For the next visualization, I wanted to take a look at how the subset of males and females who answered "yes" to the question of "do you believe a woman has the right to have an abortion for any reason". What are their attitudes toward homosexual relations?
+
+This part of my EDA looks into the second part of my question; is there a correlation between attitudes toward a woman's right to abortion and attitudes toward homosexual relations?
+
+```{r}
+m_hy_total <- length(which(m_ab_y$homosex=="Always Wrong"))+ length(which(m_ab_y$homosex=="Almst Always Wrg")) + length(which(m_ab_y$homosex=="Sometimes Wrong")) + length(which(m_ab_y$homosex=="Not Wrong At All"))
+f_hy_total <- length(which(f_ab_y$homosex=="Always Wrong"))+ length(which(f_ab_y$homosex=="Almst Always Wrg")) + length(which(f_ab_y$homosex=="Sometimes Wrong")) + length(which(f_ab_y$homosex=="Not Wrong At All"))
+
+m_hy_proportions <- c( (length(which(m_ab_y$homosex=="Always Wrong"))/m_hy_total), (length(which(m_ab_y$homosex=="Almst Always Wrg"))/m_hy_total), length(which(m_ab_y$homosex=="Sometimes Wrong"))/m_hy_total, length(which(m_ab_y$homosex=="Not Wrong At All"))/m_hy_total)
+
+f_hy_proportions <- c( (length(which(f_ab_y$homosex=="Always Wrong"))/f_hy_total), (length(which(f_ab_y$homosex=="Almst Always Wrg"))/f_hy_total), length(which(f_ab_y$homosex=="Sometimes Wrong"))/f_hy_total, length(which(f_ab_y$homosex=="Not Wrong At All"))/f_hy_total)
+
+total_hy_proportions <- rbind(m_hy_proportions,f_hy_proportions)
+
+barplot(total_hy_proportions, beside=TRUE, ylim=c(0,1), names.arg = c("Always \nWrong","Almst\nAlways\nWrg", "Sometimes\nWrong", "Not Wrong\nAt All"), col = c("darkblue", "red"), legend = c("Male", "Female"), args.legend = list(x="top"), main = "Attitudes toward homosexual relations among those \nwho believe that a woman has the right to abortion\nfor any reason", ylab = "proportion", xlab = "homosexual\nrelations", las=2)
+```
+
+The above visualize the responses of the subset of people who are pro-choice. Now let's look at the subset of people who do not believe a woman has the right to have an abortion for any reason. How do they feel about homosexual relations?
+
+We can see a large disparaty between these two groups. The starkest contrasts are in the "Always wrong" and "Not Wrong At All" responses. We can see that a larger proportion of those who are pro-choice are have a more accepting attitude of homosexual relations. 
+
+```{r}
+m_abn_total <- length(which(m_ab_n$homosex=="Always Wrong"))+ length(which(m_ab_n$homosex=="Almst Always Wrg")) + length(which(m_ab_n$homosex=="Sometimes Wrong")) + length(which(m_ab_n$homosex=="Not Wrong At All"))
+f_abn_total <- length(which(f_ab_n$homosex=="Always Wrong"))+ length(which(f_ab_n$homosex=="Almst Always Wrg")) + length(which(f_ab_n$homosex=="Sometimes Wrong")) + length(which(f_ab_n$homosex=="Not Wrong At All"))
+
+m_abn_proportions <- c( (length(which(m_ab_n$homosex=="Always Wrong"))/m_abn_total), (length(which(m_ab_n$homosex=="Almst Always Wrg"))/m_abn_total), length(which(m_ab_n$homosex=="Sometimes Wrong"))/m_abn_total, length(which(m_ab_n$homosex=="Not Wrong At All"))/m_abn_total)
+
+f_abn_proportions <- c( (length(which(f_ab_n$homosex=="Always Wrong"))/f_abn_total), (length(which(f_ab_n$homosex=="Almst Always Wrg"))/f_abn_total), length(which(f_ab_n$homosex=="Sometimes Wrong"))/f_abn_total, length(which(f_ab_n$homosex=="Not Wrong At All"))/f_abn_total)
+
+total_abn_proportions <- rbind(m_abn_proportions,f_abn_proportions)
+
+barplot(total_abn_proportions, beside=TRUE, ylim=c(0,1), names.arg = c("Always \nWrong","Almst\nAlways\nWrg", "Sometimes\nWrong", "Not Wrong\nAt All"), col = c("darkblue", "red"), legend = c("Male", "Female"), args.legend = list(x="top"), main = "Attitudes toward homosexual relations among those\nwho believe that a woman does not have the right\nto abortion for any reason", ylab = "proportion", xlab = "homosexual\nrelations", las=2)
+
+```
+
+I want to now take a side-by-side look of these two subsets of people ("yes" and "no" to the question "do you believe a woman has the right to have an abortion for any reason"). Instead of grouping by gender, the graph below will represent these two groups' attitudes toward homosexual relations.
+
+```{r}
+ab_y_total <- length(which(ab_y$homosex=="Always Wrong"))+ length(which(ab_y$homosex=="Almst Always Wrg")) + length(which(ab_y$homosex=="Sometimes Wrong")) + length(which(ab_y$homosex=="Not Wrong At All"))
+ab_n_total <- length(which(ab_n$homosex=="Always Wrong"))+ length(which(ab_n$homosex=="Almst Always Wrg")) + length(which(ab_n$homosex=="Sometimes Wrong")) + length(which(ab_n$homosex=="Not Wrong At All"))
+
+ab_y_proportions <- c( (length(which(ab_y$homosex=="Always Wrong"))/ab_y_total), (length(which(ab_y$homosex=="Almst Always Wrg"))/ab_y_total), length(which(ab_y$homosex=="Sometimes Wrong"))/ab_y_total, length(which(ab_y$homosex=="Not Wrong At All"))/ab_y_total)
+
+ab_n_proportions <- c( (length(which(ab_n$homosex=="Always Wrong"))/ab_n_total), (length(which(ab_n$homosex=="Almst Always Wrg"))/ab_n_total), length(which(ab_n$homosex=="Sometimes Wrong"))/ab_n_total, length(which(ab_n$homosex=="Not Wrong At All"))/ab_n_total)
+
+total_ab_proportions <- rbind(ab_y_proportions, ab_n_proportions)
+
+barplot(total_ab_proportions, beside=TRUE, ylim=c(0,1), names.arg = c("Always \nWrong","Almst\nAlways\nWrg", "Sometimes\nWrong", "Not Wrong\nAt All"), col = c("chartreuse", "darkorange1"), legend = c("Right to abortion", "No right to abortion"), args.legend = list(x="top"), main = "Attitudes toward homosexual relations among those\nwho believe a woman has the right to abortion\nfor any reason and those who do not", ylab = "proportion", xlab = "homosexual\nrelations", las=2)
+```
+
+The barplot above is effective in representing the contrast between these two groups.
+
+* * *
+
+## Part 4: Inference
+
+My first question asked if there were a correlation between gender and attitudes toward abortion. Here, the explanatory variable is gender and the response variable is attitude toward abortion. 
+
+Let's first  state our hypotheses, but first define some quantities:
+Let's call p_male the proportion of males who support a woman's right to have an abortion for any reason.
+Conversely, let's call p_female the proportion of females who support a woman's right to have an abortion for any reason.
+
+The null hypothesis: p_male - p_female = 0
+
+The alternate hypothesis: p_male - p_female != 0
+
+Let's estimate the difference between these two proportions. The success-failure conditions have been met.
+
+```{r}
+male_aby_proportion <- length(which(homo_ab_nonNA$sex=="Male" & homo_ab_nonNA$abany=="Yes")) / length(which(homo_ab_nonNA$sex=="Male" & (homo_ab_nonNA$abany=="Yes" | homo_ab_nonNA$abany=="No")))
+female_aby_proportion <- length(which(homo_ab_nonNA$sex=="Female" & homo_ab_nonNA$abany=="Yes")) / length(which(homo_ab_nonNA$sex=="Female" & (homo_ab_nonNA$abany=="Yes" | homo_ab_nonNA$abany=="No")))
+
+aby_n1 <- length(which(homo_ab_nonNA$sex=="Male" & (homo_ab_nonNA$abany=="Yes" | homo_ab_nonNA$abany=="No")))
+aby_n2 <- length(which(homo_ab_nonNA$sex=="Female" & (homo_ab_nonNA$abany=="Yes" | homo_ab_nonNA$abany=="No")))
+
+pooled_aby_proportion <- (length(which(homo_ab_nonNA$sex=="Male" & homo_ab_nonNA$abany=="Yes")) + length(which(homo_ab_nonNA$sex=="Female" & homo_ab_nonNA$abany=="Yes")) ) / length(which( (homo_ab_nonNA$sex=="Male" | homo_ab_nonNA$sex=="Female")  & (homo_ab_nonNA$abany=="Yes" | homo_ab_nonNA$abany=="No")))
+
+# SE for estimating difference
+sex_abany_D_SE <- sqrt(  ( (male_aby_proportion*(1-male_aby_proportion)) / aby_n1) + ( (female_aby_proportion*(1-female_aby_proportion)) / aby_n2) ) 
+
+sex_abany_D_SE
+```
+
+We see that the standard error here is 0.00597667. We'll now find the range of expected values for the 5% significance level.
+
+```{r}
+(male_aby_proportion - female_aby_proportion) - (1.96*sex_abany_D_SE)
+```
+
+```{r}
+(male_aby_proportion - female_aby_proportion) + (1.96*sex_abany_D_SE)
+```
+
+This gives us a range of (0.009843132, 0.03327168). These values indicate that we are 95% that the proportion of men who support a woman's right to have an abortion for any reason is approximately .98% to 3.3% higher than the proportion of women who do.
+
+As the null hypothesis (value of 0) does not fall within this range, we must reject the null hypothesis.
+
+Now let's take a look at a hypothesis test for these two proportions. To restate the hypotheses:
+
+The null hypothesis: p_male - p_female = 0
+
+The alternate hypothesis: p_male - p_female != 0
+
+To find the standard error for the hypothesis test of these two proportions, we will pool the proportions.
+```{r}
+# SE for hypothesis test
+sex_abany_HT_SE <- sqrt(((pooled_aby_proportion*(1 - pooled_aby_proportion)) / length(which(homo_ab_nonNA$sex=="Male" & (homo_ab_nonNA$abany=="Yes" | homo_ab_nonNA$abany=="No"))) ) + ( (pooled_aby_proportion*(1 - pooled_aby_proportion)) /  length(which(homo_ab_nonNA$sex=="Female" & (homo_ab_nonNA$abany=="Yes" | homo_ab_nonNA$abany=="No")))))
+
+sex_abany_HT_SE
+```
+
+The standard error comes out to be 0.005972433.
+
+Now let us find the p-value:
+
+```{r}
+(male_aby_proportion - female_aby_proportion) / sex_abany_HT_SE
+```
+
+```{r}
+2*pnorm(-abs(3.609485))
+```
+
+We have a p-value of 0.0003068055.
+
+With this very low p-value, we must reject the hypothesis.
+
+We can conclude that there is a correlation between gender and attitudes toward a woman's right to abortion. More specifically, men as a group are slightly more supportive of a woman's right to have an abortion for any reason.
+
+Let's now take a look at the second part of our question: is there a correlation between those who support a woman's right to have an abortion for any reason and attitudes homosexual relations?
+
+For the sake of this analysis, I created a new variable, `homo_acc`, which created two classes from the variable `homosex`.
+
+The original variable, `homosex`, had these levels: "Always Wrong", "Almst Always Wrg", "Sometimes Wrong", and "Not Wrong At All".
+
+The new variable, `homo_acc`, created two classes: "wrong" and "not wrong". Every observation in homosex whose value was "Not Wrong At All" was placed into the "not wrong" label. All others-- as they represented the respondents' attitude that homosexual relations were at the least somewhat wrong-- were labeled as "wrong" in `homo_acc`.
+
+Let's first state our hypotheses, first defining some terms:
+
+Let's call the proportion of people who support a woman's right to abortion for any reason and feel that homosexual relations are not wrong: p_choice.
+
+Conversely, Let's call the proportion of people who do not support a woman's right to abortion for any reason and feel that homosexual relations are not wrong: p_life.
+
+Null hypothesis: p_choice - p_life = 0
+Alternate hypothesis: p_choice - p_life != 0
+
+Now, let's estimate the difference between these two proportions. The success-failure conditions have been met.
+
+```{r}
+aby_homonotwrong <- length(which(homo_ab_nonNA$abany=="Yes" & homo_ab_nonNA$homo_acc=="not wrong"))/length(which(homo_ab_nonNA$abany=="Yes" & (homo_ab_nonNA$homo_acc=="not wrong" | homo_ab_nonNA$homo_acc=="wrong")))
+
+abn_homonotwrong <- length(which(homo_ab_nonNA$abany=="No" & homo_ab_nonNA$homo_acc=="not wrong"))/length(which(homo_ab_nonNA$abany=="No" & (homo_ab_nonNA$homo_acc=="not wrong" | homo_ab_nonNA$homo_acc=="wrong")))
+
+h_n1 <- length(which(homo_ab_nonNA$abany=="Yes" & (homo_ab_nonNA$homo_acc=="not wrong" | homo_ab_nonNA$homo_acc=="wrong")))
+h_n2 <- length(which(homo_ab_nonNA$abany=="No" & (homo_ab_nonNA$homo_acc=="not wrong" | homo_ab_nonNA$homo_acc=="wrong")))
+
+ab_homo_D_SE <- sqrt( ( (aby_homonotwrong*(1 - aby_homonotwrong) ) / h_n1) + (abn_homonotwrong*(1 - abn_homonotwrong) / h_n2) )
+```
+
+We get a standard error of 0.005309297.
+
+```{r}
+(aby_homonotwrong - abn_homonotwrong) + 1.96*ab_homo_D_SE
+(aby_homonotwrong - abn_homonotwrong) - 1.96*ab_homo_D_SE
+```
+
+We estimate the difference to be the range of (0.2654158, 0.2862282). As the value of the null hypothesis does not lie in this range, we must reject the null hypothesis.
+
+This range tells us that we are 95% certain that the proportion of people who support a woman's right to abortion for any reason are 26.54% to 28.62% more likely to think of homosexual relations as not wrong.
+
+Now let us conduct a hypothesis test of these two proportions. We fill first use the pooled proportions to find the standard error.
+
+```{r}
+pooled_homonotwrong_proportion <- ( length(which(homo_ab_nonNA$abany=="Yes" & homo_ab_nonNA$homo_acc=="not wrong")) + length(which(homo_ab_nonNA$abany=="No" & homo_ab_nonNA$homo_acc=="not wrong"))) /  length(which((homo_ab_nonNA$abany=="No" | homo_ab_nonNA$abany=="Yes") & (homo_ab_nonNA$homo_acc=="not wrong" | homo_ab_nonNA$homo_acc=="wrong")))
+
+ab_homo_HT_SE <- sqrt(  ( (pooled_homonotwrong_proportion*(1 - pooled_homonotwrong_proportion) )/ (h_n1)  ) + ( (pooled_homonotwrong_proportion*(1 - pooled_homonotwrong_proportion)) / (h_n2) ) ) 
+```
+
+The standard error is 0.00522962.
+
+Now we will find the p-value.
+
+```{r}
+(aby_homonotwrong - abn_homonotwrong) / ab_homo_HT_SE
+2*pnorm(-abs(52.74226))
+```
+
+The answer seems to be pretty clear here, with a p-value of 0. We must reject the null hypothesis and conclude that there is a difference among the proportion of people who believe that homosexual relations are not wrong, between people who believe that a woman has the right to an abortion for any reason and those who do not.

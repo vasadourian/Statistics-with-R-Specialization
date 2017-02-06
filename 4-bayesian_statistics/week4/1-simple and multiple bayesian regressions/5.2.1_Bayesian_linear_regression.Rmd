@@ -1,0 +1,872 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" class=" is-copy-enabled is-u2f-enabled">
+  <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# object: http://ogp.me/ns/object# article: http://ogp.me/ns/article# profile: http://ogp.me/ns/profile#">
+    <meta charset='utf-8'>
+    
+
+    <link crossorigin="anonymous" href="https://assets-cdn.github.com/assets/frameworks-96d3c90d9d94b08c8ad5ae6b8330d0ee8a8488a340e22ff175ad5f68d1e7829f.css" integrity="sha256-ltPJDZ2UsIyK1a5rgzDQ7oqEiKNA4i/xda1faNHngp8=" media="all" rel="stylesheet" />
+    <link crossorigin="anonymous" href="https://assets-cdn.github.com/assets/github-05e14ce73b537df26fb175af401e6406d7141b763222b194c10bb4dae47aba83.css" integrity="sha256-BeFM5ztTffJvsXWvQB5kBtcUG3YyIrGUwQu02uR6uoM=" media="all" rel="stylesheet" />
+    
+    
+    
+    
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Language" content="en">
+    <meta name="viewport" content="width=device-width">
+    
+    <title>figures/5.2.1_Bayesian_linear_regression.Rmd at 3caf5ae9be4a9baf595ff83b93a0cccd0930cc94 · StatsWithR/figures</title>
+    <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub">
+    <link rel="fluid-icon" href="https://github.com/fluidicon.png" title="GitHub">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
+    <meta property="fb:app_id" content="1401488693436528">
+
+      <meta content="https://avatars3.githubusercontent.com/u/18332552?v=3&amp;s=400" name="twitter:image:src" /><meta content="@github" name="twitter:site" /><meta content="summary" name="twitter:card" /><meta content="StatsWithR/figures" name="twitter:title" /><meta content="R code for figures on Statistics with R slides" name="twitter:description" />
+      <meta content="https://avatars3.githubusercontent.com/u/18332552?v=3&amp;s=400" property="og:image" /><meta content="GitHub" property="og:site_name" /><meta content="object" property="og:type" /><meta content="StatsWithR/figures" property="og:title" /><meta content="https://github.com/StatsWithR/figures" property="og:url" /><meta content="R code for figures on Statistics with R slides" property="og:description" />
+      <meta name="browser-stats-url" content="https://api.github.com/_private/browser/stats">
+    <meta name="browser-errors-url" content="https://api.github.com/_private/browser/errors">
+    <link rel="assets" href="https://assets-cdn.github.com/">
+    <link rel="web-socket" href="wss://live.github.com/_sockets/NDAwNzI0NjoyOTE5OGZhMmZmZGEyMmMyYTBiMjAzYzExNjBiZTUwYzoyYzkwMDcxZjk1ZDYyNDlhNzhiNDFiODJmODBlZWJlZmU0YTA1YTdiY2Q5YmQwOWExNzkwYWI4N2I0MTQ5YjNl--6ccecd9865fafe63f0167707a80fa587323e3435">
+    <meta name="pjax-timeout" content="1000">
+    <link rel="sudo-modal" href="/sessions/sudo_modal">
+    <meta name="request-id" content="4920C377:0B3C:81C5E4E:580FCABA" data-pjax-transient>
+
+    <meta name="msapplication-TileImage" content="/windows-tile.png">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="selected-link" value="repo_source" data-pjax-transient>
+
+    <meta name="google-site-verification" content="KT5gs8h0wvaagLKAVWq8bbeNwnZZK1r1XQysX3xurLU">
+<meta name="google-site-verification" content="ZzhVyEFwb7w3e0-uOTltm8Jsck2F5StVihD0exw2fsA">
+    <meta name="google-analytics" content="UA-3769691-2">
+
+<meta content="collector.githubapp.com" name="octolytics-host" /><meta content="github" name="octolytics-app-id" /><meta content="4920C377:0B3C:81C5E4E:580FCABA" name="octolytics-dimension-request_id" /><meta content="4007246" name="octolytics-actor-id" /><meta content="vasadourian" name="octolytics-actor-login" /><meta content="bbe734d97ad74d672f92b7677405391b452ca079609bd3695ba7a916a8e25f4e" name="octolytics-actor-hash" />
+<meta content="/&lt;user-name&gt;/&lt;repo-name&gt;/blob/show" data-pjax-transient="true" name="analytics-location" />
+
+
+
+  <meta class="js-ga-set" name="dimension1" content="Logged In">
+
+
+
+        <meta name="hostname" content="github.com">
+    <meta name="user-login" content="vasadourian">
+
+        <meta name="expected-hostname" content="github.com">
+      <meta name="js-proxy-site-detection-payload" content="ZmRjMmQyNTJkZjFjNzUxMjdlZjVlZGJkOGQ5NmNmMjMwODllYWUwZjhiZmMzYTkyNmMzZDM3ZGE5Yzg2Nzk3Ynx7InJlbW90ZV9hZGRyZXNzIjoiNzMuMzIuMTk1LjExOSIsInJlcXVlc3RfaWQiOiI0OTIwQzM3NzowQjNDOjgxQzVFNEU6NTgwRkNBQkEiLCJ0aW1lc3RhbXAiOjE0Nzc0Mjk5NTAsImhvc3QiOiJnaXRodWIuY29tIn0=">
+
+
+      <link rel="mask-icon" href="https://assets-cdn.github.com/pinned-octocat.svg" color="#4078c0">
+      <link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
+
+    <meta name="html-safe-nonce" content="7ba7a89acd4fab649b13940f70e5f69c5679f965">
+    <meta content="c7a6d89da3979022b1f0772b6c5f3c6fbc4f33a7" name="form-nonce" />
+
+    <meta http-equiv="x-pjax-version" content="61300da8e3d7812170cf5d07db541647">
+    
+
+      
+  <meta name="description" content="R code for figures on Statistics with R slides">
+  <meta name="go-import" content="github.com/StatsWithR/figures git https://github.com/StatsWithR/figures.git">
+
+  <meta content="18332552" name="octolytics-dimension-user_id" /><meta content="StatsWithR" name="octolytics-dimension-user_login" /><meta content="62428290" name="octolytics-dimension-repository_id" /><meta content="StatsWithR/figures" name="octolytics-dimension-repository_nwo" /><meta content="true" name="octolytics-dimension-repository_public" /><meta content="false" name="octolytics-dimension-repository_is_fork" /><meta content="62428290" name="octolytics-dimension-repository_network_root_id" /><meta content="StatsWithR/figures" name="octolytics-dimension-repository_network_root_nwo" />
+  <link href="https://github.com/StatsWithR/figures/commits/3caf5ae9be4a9baf595ff83b93a0cccd0930cc94.atom" rel="alternate" title="Recent Commits to figures:3caf5ae9be4a9baf595ff83b93a0cccd0930cc94" type="application/atom+xml">
+
+
+      <link rel="canonical" href="https://github.com/StatsWithR/figures/blob/3caf5ae9be4a9baf595ff83b93a0cccd0930cc94/04_bayesian_statistics/week_04/5.2.1_Bayesian_linear_regression/R/5.2.1_Bayesian_linear_regression.Rmd" data-pjax-transient>
+  </head>
+
+
+  <body class="logged-in  env-production linux vis-public page-blob">
+    <div id="js-pjax-loader-bar" class="pjax-loader-bar"><div class="progress"></div></div>
+    <a href="#start-of-content" tabindex="1" class="accessibility-aid js-skip-to-content">Skip to content</a>
+
+    
+    
+    
+
+
+
+        <div class="header header-logged-in true" role="banner">
+  <div class="container clearfix">
+
+    <a class="header-logo-invertocat" href="https://github.com/" data-hotkey="g d" aria-label="Homepage" data-ga-click="Header, go to dashboard, icon:logo">
+  <svg aria-hidden="true" class="octicon octicon-mark-github" height="28" version="1.1" viewBox="0 0 16 16" width="28"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
+</a>
+
+
+        <div class="header-search scoped-search site-scoped-search js-site-search" role="search">
+  <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/StatsWithR/figures/search" class="js-site-search-form" data-scoped-search-url="/StatsWithR/figures/search" data-unscoped-search-url="/search" method="get"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /></div>
+    <label class="form-control header-search-wrapper js-chromeless-input-container">
+      <div class="header-search-scope">This repository</div>
+      <input type="text"
+        class="form-control header-search-input js-site-search-focus js-site-search-field is-clearable"
+        data-hotkey="s"
+        name="q"
+        placeholder="Search"
+        aria-label="Search this repository"
+        data-unscoped-placeholder="Search GitHub"
+        data-scoped-placeholder="Search"
+        autocapitalize="off">
+    </label>
+</form></div>
+
+
+      <ul class="header-nav float-left" role="navigation">
+        <li class="header-nav-item">
+          <a href="/pulls" aria-label="Pull requests you created" class="js-selected-navigation-item header-nav-link" data-ga-click="Header, click, Nav menu - item:pulls context:user" data-hotkey="g p" data-selected-links="/pulls /pulls/assigned /pulls/mentioned /pulls">
+            Pull requests
+</a>        </li>
+        <li class="header-nav-item">
+          <a href="/issues" aria-label="Issues you created" class="js-selected-navigation-item header-nav-link" data-ga-click="Header, click, Nav menu - item:issues context:user" data-hotkey="g i" data-selected-links="/issues /issues/assigned /issues/mentioned /issues">
+            Issues
+</a>        </li>
+          <li class="header-nav-item">
+            <a class="header-nav-link" href="https://gist.github.com/" data-ga-click="Header, go to gist, text:gist">Gist</a>
+          </li>
+      </ul>
+
+    
+<ul class="header-nav user-nav float-right" id="user-links">
+  <li class="header-nav-item">
+    
+    <a href="/notifications" aria-label="You have no unread notifications" class="header-nav-link notification-indicator tooltipped tooltipped-s js-socket-channel js-notification-indicator" data-channel="tenant:1:notification-changed:4007246" data-ga-click="Header, go to notifications, icon:read" data-hotkey="g n">
+        <span class="mail-status "></span>
+        <svg aria-hidden="true" class="octicon octicon-bell" height="16" version="1.1" viewBox="0 0 14 16" width="14"><path d="M14 12v1H0v-1l.73-.58c.77-.77.81-2.55 1.19-4.42C2.69 3.23 6 2 6 2c0-.55.45-1 1-1s1 .45 1 1c0 0 3.39 1.23 4.16 5 .38 1.88.42 3.66 1.19 4.42l.66.58H14zm-7 4c1.11 0 2-.89 2-2H5c0 1.11.89 2 2 2z"></path></svg>
+</a>
+  </li>
+
+  <li class="header-nav-item dropdown js-menu-container">
+    <a class="header-nav-link tooltipped tooltipped-s js-menu-target" href="/new"
+       aria-label="Create new…"
+       data-ga-click="Header, create new, icon:add">
+      <svg aria-hidden="true" class="octicon octicon-plus float-left" height="16" version="1.1" viewBox="0 0 12 16" width="12"><path d="M12 9H7v5H5V9H0V7h5V2h2v5h5z"></path></svg>
+      <span class="dropdown-caret"></span>
+    </a>
+
+    <div class="dropdown-menu-content js-menu-content">
+      <ul class="dropdown-menu dropdown-menu-sw">
+        
+<a class="dropdown-item" href="/new" data-ga-click="Header, create new repository">
+  New repository
+</a>
+
+  <a class="dropdown-item" href="/new/import" data-ga-click="Header, import a repository">
+    Import repository
+  </a>
+
+
+  <a class="dropdown-item" href="/organizations/new" data-ga-click="Header, create new organization">
+    New organization
+  </a>
+
+
+
+  <div class="dropdown-divider"></div>
+  <div class="dropdown-header">
+    <span title="StatsWithR/figures">This repository</span>
+  </div>
+    <a class="dropdown-item" href="/StatsWithR/figures/issues/new" data-ga-click="Header, create new issue">
+      New issue
+    </a>
+
+      </ul>
+    </div>
+  </li>
+
+  <li class="header-nav-item dropdown js-menu-container">
+    <a class="header-nav-link name tooltipped tooltipped-sw js-menu-target" href="/vasadourian"
+       aria-label="View profile and more"
+       data-ga-click="Header, show menu, icon:avatar">
+      <img alt="@vasadourian" class="avatar" height="20" src="https://avatars2.githubusercontent.com/u/4007246?v=3&amp;s=40" width="20" />
+      <span class="dropdown-caret"></span>
+    </a>
+
+    <div class="dropdown-menu-content js-menu-content">
+      <div class="dropdown-menu dropdown-menu-sw">
+        <div class="dropdown-header header-nav-current-user css-truncate">
+          Signed in as <strong class="css-truncate-target">vasadourian</strong>
+        </div>
+
+        <div class="dropdown-divider"></div>
+
+        <a class="dropdown-item" href="/vasadourian" data-ga-click="Header, go to profile, text:your profile">
+          Your profile
+        </a>
+        <a class="dropdown-item" href="/vasadourian?tab=stars" data-ga-click="Header, go to starred repos, text:your stars">
+          Your stars
+        </a>
+        <a class="dropdown-item" href="/explore" data-ga-click="Header, go to explore, text:explore">
+          Explore
+        </a>
+          <a class="dropdown-item" href="/integrations" data-ga-click="Header, go to integrations, text:integrations">
+            Integrations
+          </a>
+        <a class="dropdown-item" href="https://help.github.com" data-ga-click="Header, go to help, text:help">
+          Help
+        </a>
+
+        <div class="dropdown-divider"></div>
+
+        <a class="dropdown-item" href="/settings/profile" data-ga-click="Header, go to settings, icon:settings">
+          Settings
+        </a>
+
+        <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/logout" class="logout-form" data-form-nonce="c7a6d89da3979022b1f0772b6c5f3c6fbc4f33a7" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="pvgVSOnnEbNNLIWBG0pDjV8R34vipXbh4YmAI+InZx/nza1YWUP5/ivppQjWDIuW7jxE05p5KqYQvtjyvhWuXA==" /></div>
+          <button type="submit" class="dropdown-item dropdown-signout" data-ga-click="Header, sign out, icon:logout">
+            Sign out
+          </button>
+</form>      </div>
+    </div>
+  </li>
+</ul>
+
+
+    
+  </div>
+</div>
+
+
+      
+
+
+    <div id="start-of-content" class="accessibility-aid"></div>
+
+      <div id="js-flash-container">
+</div>
+
+
+    <div role="main">
+        <div itemscope itemtype="http://schema.org/SoftwareSourceCode">
+    <div id="js-repo-pjax-container" data-pjax-container>
+      
+<div class="pagehead repohead instapaper_ignore readability-menu experiment-repo-nav">
+  <div class="container repohead-details-container">
+
+    
+
+<ul class="pagehead-actions">
+
+  <li>
+        <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/notifications/subscribe" class="js-social-container" data-autosubmit="true" data-form-nonce="c7a6d89da3979022b1f0772b6c5f3c6fbc4f33a7" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="tQuVOKpuVuRvghxu11F14WkjXg+8InCPJI+mZp3fDmMNe7q+V12AZDNoVSdIRqH1bBBE+Hv9BVj2RUqV1cdkGQ==" /></div>      <input class="form-control" id="repository_id" name="repository_id" type="hidden" value="62428290" />
+
+        <div class="select-menu js-menu-container js-select-menu">
+          <a href="/StatsWithR/figures/subscription"
+            class="btn btn-sm btn-with-count select-menu-button js-menu-target" role="button" tabindex="0" aria-haspopup="true"
+            data-ga-click="Repository, click Watch settings, action:blob#show">
+            <span class="js-select-button">
+              <svg aria-hidden="true" class="octicon octicon-eye" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M8.06 2C3 2 0 8 0 8s3 6 8.06 6C13 14 16 8 16 8s-3-6-7.94-6zM8 12c-2.2 0-4-1.78-4-4 0-2.2 1.8-4 4-4 2.22 0 4 1.8 4 4 0 2.22-1.78 4-4 4zm2-4c0 1.11-.89 2-2 2-1.11 0-2-.89-2-2 0-1.11.89-2 2-2 1.11 0 2 .89 2 2z"></path></svg>
+              Watch
+            </span>
+          </a>
+          <a class="social-count js-social-count"
+            href="/StatsWithR/figures/watchers"
+            aria-label="6 users are watching this repository">
+            6
+          </a>
+
+        <div class="select-menu-modal-holder">
+          <div class="select-menu-modal subscription-menu-modal js-menu-content" aria-hidden="true">
+            <div class="select-menu-header js-navigation-enable" tabindex="-1">
+              <svg aria-label="Close" class="octicon octicon-x js-menu-close" height="16" role="img" version="1.1" viewBox="0 0 12 16" width="12"><path d="M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48z"></path></svg>
+              <span class="select-menu-title">Notifications</span>
+            </div>
+
+              <div class="select-menu-list js-navigation-container" role="menu">
+
+                <div class="select-menu-item js-navigation-item selected" role="menuitem" tabindex="0">
+                  <svg aria-hidden="true" class="octicon octicon-check select-menu-item-icon" height="16" version="1.1" viewBox="0 0 12 16" width="12"><path d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5z"></path></svg>
+                  <div class="select-menu-item-text">
+                    <input checked="checked" id="do_included" name="do" type="radio" value="included" />
+                    <span class="select-menu-item-heading">Not watching</span>
+                    <span class="description">Be notified when participating or @mentioned.</span>
+                    <span class="js-select-button-text hidden-select-button-text">
+                      <svg aria-hidden="true" class="octicon octicon-eye" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M8.06 2C3 2 0 8 0 8s3 6 8.06 6C13 14 16 8 16 8s-3-6-7.94-6zM8 12c-2.2 0-4-1.78-4-4 0-2.2 1.8-4 4-4 2.22 0 4 1.8 4 4 0 2.22-1.78 4-4 4zm2-4c0 1.11-.89 2-2 2-1.11 0-2-.89-2-2 0-1.11.89-2 2-2 1.11 0 2 .89 2 2z"></path></svg>
+                      Watch
+                    </span>
+                  </div>
+                </div>
+
+                <div class="select-menu-item js-navigation-item " role="menuitem" tabindex="0">
+                  <svg aria-hidden="true" class="octicon octicon-check select-menu-item-icon" height="16" version="1.1" viewBox="0 0 12 16" width="12"><path d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5z"></path></svg>
+                  <div class="select-menu-item-text">
+                    <input id="do_subscribed" name="do" type="radio" value="subscribed" />
+                    <span class="select-menu-item-heading">Watching</span>
+                    <span class="description">Be notified of all conversations.</span>
+                    <span class="js-select-button-text hidden-select-button-text">
+                      <svg aria-hidden="true" class="octicon octicon-eye" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M8.06 2C3 2 0 8 0 8s3 6 8.06 6C13 14 16 8 16 8s-3-6-7.94-6zM8 12c-2.2 0-4-1.78-4-4 0-2.2 1.8-4 4-4 2.22 0 4 1.8 4 4 0 2.22-1.78 4-4 4zm2-4c0 1.11-.89 2-2 2-1.11 0-2-.89-2-2 0-1.11.89-2 2-2 1.11 0 2 .89 2 2z"></path></svg>
+                      Unwatch
+                    </span>
+                  </div>
+                </div>
+
+                <div class="select-menu-item js-navigation-item " role="menuitem" tabindex="0">
+                  <svg aria-hidden="true" class="octicon octicon-check select-menu-item-icon" height="16" version="1.1" viewBox="0 0 12 16" width="12"><path d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5z"></path></svg>
+                  <div class="select-menu-item-text">
+                    <input id="do_ignore" name="do" type="radio" value="ignore" />
+                    <span class="select-menu-item-heading">Ignoring</span>
+                    <span class="description">Never be notified.</span>
+                    <span class="js-select-button-text hidden-select-button-text">
+                      <svg aria-hidden="true" class="octicon octicon-mute" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M8 2.81v10.38c0 .67-.81 1-1.28.53L3 10H1c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h2l3.72-3.72C7.19 1.81 8 2.14 8 2.81zm7.53 3.22l-1.06-1.06-1.97 1.97-1.97-1.97-1.06 1.06L11.44 8 9.47 9.97l1.06 1.06 1.97-1.97 1.97 1.97 1.06-1.06L13.56 8l1.97-1.97z"></path></svg>
+                      Stop ignoring
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+</form>
+  </li>
+
+  <li>
+    
+  <div class="js-toggler-container js-social-container starring-container ">
+
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/StatsWithR/figures/unstar" class="starred" data-form-nonce="c7a6d89da3979022b1f0772b6c5f3c6fbc4f33a7" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="5HIQGnlFhpE5lKQxlRxjqG/kBym/lHFjDQPx/Y9I0XdoLTnP8+U4d3pcz8NefDy48ZeZXMAeIuhN/Y5AW7cB0w==" /></div>
+      <button
+        type="submit"
+        class="btn btn-sm btn-with-count js-toggler-target"
+        aria-label="Unstar this repository" title="Unstar StatsWithR/figures"
+        data-ga-click="Repository, click unstar button, action:blob#show; text:Unstar">
+        <svg aria-hidden="true" class="octicon octicon-star" height="16" version="1.1" viewBox="0 0 14 16" width="14"><path d="M14 6l-4.9-.64L7 1 4.9 5.36 0 6l3.6 3.26L2.67 14 7 11.67 11.33 14l-.93-4.74z"></path></svg>
+        Unstar
+      </button>
+        <a class="social-count js-social-count" href="/StatsWithR/figures/stargazers"
+           aria-label="6 users starred this repository">
+          6
+        </a>
+</form>
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/StatsWithR/figures/star" class="unstarred" data-form-nonce="c7a6d89da3979022b1f0772b6c5f3c6fbc4f33a7" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="gRey3ZC0mW/hjrio6talLVm9DkaiSZXhg/PJ9GwpjlNatd+9kRjmF1yFJNKejzkyFwD8BcnRk8qQD9/EfD6F/Q==" /></div>
+      <button
+        type="submit"
+        class="btn btn-sm btn-with-count js-toggler-target"
+        aria-label="Star this repository" title="Star StatsWithR/figures"
+        data-ga-click="Repository, click star button, action:blob#show; text:Star">
+        <svg aria-hidden="true" class="octicon octicon-star" height="16" version="1.1" viewBox="0 0 14 16" width="14"><path d="M14 6l-4.9-.64L7 1 4.9 5.36 0 6l3.6 3.26L2.67 14 7 11.67 11.33 14l-.93-4.74z"></path></svg>
+        Star
+      </button>
+        <a class="social-count js-social-count" href="/StatsWithR/figures/stargazers"
+           aria-label="6 users starred this repository">
+          6
+        </a>
+</form>  </div>
+
+  </li>
+
+  <li>
+          <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/StatsWithR/figures/fork" class="btn-with-count" data-form-nonce="c7a6d89da3979022b1f0772b6c5f3c6fbc4f33a7" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="qmqfpFh9Rd31GJ3KkS1n2abLNE72sLdoaqcfcT3TSsF3qNabQxBi1ttadOTKkQbIRVcuFmedcXxpqhzqAZabmQ==" /></div>
+            <button
+                type="submit"
+                class="btn btn-sm btn-with-count"
+                data-ga-click="Repository, show fork modal, action:blob#show; text:Fork"
+                title="Fork your own copy of StatsWithR/figures to your account"
+                aria-label="Fork your own copy of StatsWithR/figures to your account">
+              <svg aria-hidden="true" class="octicon octicon-repo-forked" height="16" version="1.1" viewBox="0 0 10 16" width="10"><path d="M8 1a1.993 1.993 0 0 0-1 3.72V6L5 8 3 6V4.72A1.993 1.993 0 0 0 2 1a1.993 1.993 0 0 0-1 3.72V6.5l3 3v1.78A1.993 1.993 0 0 0 5 15a1.993 1.993 0 0 0 1-3.72V9.5l3-3V4.72A1.993 1.993 0 0 0 8 1zM2 4.2C1.34 4.2.8 3.65.8 3c0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2zm3 10c-.66 0-1.2-.55-1.2-1.2 0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2zm3-10c-.66 0-1.2-.55-1.2-1.2 0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2z"></path></svg>
+              Fork
+            </button>
+</form>
+    <a href="/StatsWithR/figures/network" class="social-count"
+       aria-label="9 users are forked this repository">
+      9
+    </a>
+  </li>
+</ul>
+
+    <h1 class="public ">
+  <svg aria-hidden="true" class="octicon octicon-repo" height="16" version="1.1" viewBox="0 0 12 16" width="12"><path d="M4 9H3V8h1v1zm0-3H3v1h1V6zm0-2H3v1h1V4zm0-2H3v1h1V2zm8-1v12c0 .55-.45 1-1 1H6v2l-1.5-1.5L3 16v-2H1c-.55 0-1-.45-1-1V1c0-.55.45-1 1-1h10c.55 0 1 .45 1 1zm-1 10H1v2h2v-1h3v1h5v-2zm0-10H2v9h9V1z"></path></svg>
+  <span class="author" itemprop="author"><a href="/StatsWithR" class="url fn" rel="author">StatsWithR</a></span><!--
+--><span class="path-divider">/</span><!--
+--><strong itemprop="name"><a href="/StatsWithR/figures" data-pjax="#js-repo-pjax-container">figures</a></strong>
+
+</h1>
+
+  </div>
+  <div class="container">
+    
+<nav class="reponav js-repo-nav js-sidenav-container-pjax"
+     itemscope
+     itemtype="http://schema.org/BreadcrumbList"
+     role="navigation"
+     data-pjax="#js-repo-pjax-container">
+
+  <span itemscope itemtype="http://schema.org/ListItem" itemprop="itemListElement">
+    <a href="/StatsWithR/figures" aria-selected="true" class="js-selected-navigation-item selected reponav-item" data-hotkey="g c" data-selected-links="repo_source repo_downloads repo_commits repo_releases repo_tags repo_branches /StatsWithR/figures" itemprop="url">
+      <svg aria-hidden="true" class="octicon octicon-code" height="16" version="1.1" viewBox="0 0 14 16" width="14"><path d="M9.5 3L8 4.5 11.5 8 8 11.5 9.5 13 14 8 9.5 3zm-5 0L0 8l4.5 5L6 11.5 2.5 8 6 4.5 4.5 3z"></path></svg>
+      <span itemprop="name">Code</span>
+      <meta itemprop="position" content="1">
+</a>  </span>
+
+    <span itemscope itemtype="http://schema.org/ListItem" itemprop="itemListElement">
+      <a href="/StatsWithR/figures/issues" class="js-selected-navigation-item reponav-item" data-hotkey="g i" data-selected-links="repo_issues repo_labels repo_milestones /StatsWithR/figures/issues" itemprop="url">
+        <svg aria-hidden="true" class="octicon octicon-issue-opened" height="16" version="1.1" viewBox="0 0 14 16" width="14"><path d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg>
+        <span itemprop="name">Issues</span>
+        <span class="counter">0</span>
+        <meta itemprop="position" content="2">
+</a>    </span>
+
+  <span itemscope itemtype="http://schema.org/ListItem" itemprop="itemListElement">
+    <a href="/StatsWithR/figures/pulls" class="js-selected-navigation-item reponav-item" data-hotkey="g p" data-selected-links="repo_pulls /StatsWithR/figures/pulls" itemprop="url">
+      <svg aria-hidden="true" class="octicon octicon-git-pull-request" height="16" version="1.1" viewBox="0 0 12 16" width="12"><path d="M11 11.28V5c-.03-.78-.34-1.47-.94-2.06C9.46 2.35 8.78 2.03 8 2H7V0L4 3l3 3V4h1c.27.02.48.11.69.31.21.2.3.42.31.69v6.28A1.993 1.993 0 0 0 10 15a1.993 1.993 0 0 0 1-3.72zm-1 2.92c-.66 0-1.2-.55-1.2-1.2 0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2zM4 3c0-1.11-.89-2-2-2a1.993 1.993 0 0 0-1 3.72v6.56A1.993 1.993 0 0 0 2 15a1.993 1.993 0 0 0 1-3.72V4.72c.59-.34 1-.98 1-1.72zm-.8 10c0 .66-.55 1.2-1.2 1.2-.65 0-1.2-.55-1.2-1.2 0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2zM2 4.2C1.34 4.2.8 3.65.8 3c0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2z"></path></svg>
+      <span itemprop="name">Pull requests</span>
+      <span class="counter">0</span>
+      <meta itemprop="position" content="3">
+</a>  </span>
+
+  <a href="/StatsWithR/figures/projects" class="js-selected-navigation-item reponav-item" data-selected-links="repo_projects new_repo_project repo_project /StatsWithR/figures/projects">
+    <svg class="octicon" aria-hidden="true" version="1.1" width="15" height="16" viewBox="0 0 15 16">
+      <path d="M1 15h13V1H1v14zM15 1v14a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V1a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1zm-4.41 11h1.82c.59 0 .59-.41.59-1V3c0-.59 0-1-.59-1h-1.82C10 2 10 2.41 10 3v8c0 .59 0 1 .59 1zm-4-2h1.82C9 10 9 9.59 9 9V3c0-.59 0-1-.59-1H6.59C6 2 6 2.41 6 3v6c0 .59 0 1 .59 1zM2 13V3c0-.59 0-1 .59-1h1.82C5 2 5 2.41 5 3v10c0 .59 0 1-.59 1H2.59C2 14 2 13.59 2 13z"></path>
+    </svg>
+    Projects
+    <span class="counter">0</span>
+</a>
+    <a href="/StatsWithR/figures/wiki" class="js-selected-navigation-item reponav-item" data-hotkey="g w" data-selected-links="repo_wiki /StatsWithR/figures/wiki">
+      <svg aria-hidden="true" class="octicon octicon-book" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M3 5h4v1H3V5zm0 3h4V7H3v1zm0 2h4V9H3v1zm11-5h-4v1h4V5zm0 2h-4v1h4V7zm0 2h-4v1h4V9zm2-6v9c0 .55-.45 1-1 1H9.5l-1 1-1-1H2c-.55 0-1-.45-1-1V3c0-.55.45-1 1-1h5.5l1 1 1-1H15c.55 0 1 .45 1 1zm-8 .5L7.5 3H2v9h6V3.5zm7-.5H9.5l-.5.5V12h6V3z"></path></svg>
+      Wiki
+</a>
+
+  <a href="/StatsWithR/figures/pulse" class="js-selected-navigation-item reponav-item" data-selected-links="pulse /StatsWithR/figures/pulse">
+    <svg aria-hidden="true" class="octicon octicon-pulse" height="16" version="1.1" viewBox="0 0 14 16" width="14"><path d="M11.5 8L8.8 5.4 6.6 8.5 5.5 1.6 2.38 8H0v2h3.6l.9-1.8.9 5.4L9 8.5l1.6 1.5H14V8z"></path></svg>
+    Pulse
+</a>
+  <a href="/StatsWithR/figures/graphs" class="js-selected-navigation-item reponav-item" data-selected-links="repo_graphs repo_contributors /StatsWithR/figures/graphs">
+    <svg aria-hidden="true" class="octicon octicon-graph" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M16 14v1H0V0h1v14h15zM5 13H3V8h2v5zm4 0H7V3h2v10zm4 0h-2V6h2v7z"></path></svg>
+    Graphs
+</a>
+
+</nav>
+
+  </div>
+</div>
+
+<div class="container new-discussion-timeline experiment-repo-nav">
+  <div class="repository-content">
+
+    
+
+<a href="/StatsWithR/figures/blob/3caf5ae9be4a9baf595ff83b93a0cccd0930cc94/04_bayesian_statistics/week_04/5.2.1_Bayesian_linear_regression/R/5.2.1_Bayesian_linear_regression.Rmd" class="d-none js-permalink-shortcut" data-hotkey="y">Permalink</a>
+
+<!-- blob contrib key: blob_contributors:v21:de051db7099ef4c81858da8dc0403050 -->
+
+<div class="file-navigation js-zeroclipboard-container">
+  
+<div class="select-menu branch-select-menu js-menu-container js-select-menu float-left">
+  <button class="btn btn-sm select-menu-button js-menu-target css-truncate" data-hotkey="w"
+    
+    type="button" aria-label="Switch branches or tags" tabindex="0" aria-haspopup="true">
+    <i>Tree:</i>
+    <span class="js-select-button css-truncate-target">3caf5ae9be</span>
+  </button>
+
+  <div class="select-menu-modal-holder js-menu-content js-navigation-container" data-pjax aria-hidden="true">
+
+    <div class="select-menu-modal">
+      <div class="select-menu-header">
+        <svg aria-label="Close" class="octicon octicon-x js-menu-close" height="16" role="img" version="1.1" viewBox="0 0 12 16" width="12"><path d="M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48z"></path></svg>
+        <span class="select-menu-title">Switch branches/tags</span>
+      </div>
+
+      <div class="select-menu-filters">
+        <div class="select-menu-text-filter">
+          <input type="text" aria-label="Filter branches/tags" id="context-commitish-filter-field" class="form-control js-filterable-field js-navigation-enable" placeholder="Filter branches/tags">
+        </div>
+        <div class="select-menu-tabs">
+          <ul>
+            <li class="select-menu-tab">
+              <a href="#" data-tab-filter="branches" data-filter-placeholder="Filter branches/tags" class="js-select-menu-tab" role="tab">Branches</a>
+            </li>
+            <li class="select-menu-tab">
+              <a href="#" data-tab-filter="tags" data-filter-placeholder="Find a tag…" class="js-select-menu-tab" role="tab">Tags</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="select-menu-list select-menu-tab-bucket js-select-menu-tab-bucket" data-tab-filter="branches" role="menu">
+
+        <div data-filterable-for="context-commitish-filter-field" data-filterable-type="substring">
+
+
+            <a class="select-menu-item js-navigation-item js-navigation-open "
+               href="/StatsWithR/figures/blob/master/04_bayesian_statistics/week_04/5.2.1_Bayesian_linear_regression/R/5.2.1_Bayesian_linear_regression.Rmd"
+               data-name="master"
+               data-skip-pjax="true"
+               rel="nofollow">
+              <svg aria-hidden="true" class="octicon octicon-check select-menu-item-icon" height="16" version="1.1" viewBox="0 0 12 16" width="12"><path d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5z"></path></svg>
+              <span class="select-menu-item-text css-truncate-target js-select-menu-filter-text">
+                master
+              </span>
+            </a>
+        </div>
+
+          <div class="select-menu-no-results">Nothing to show</div>
+      </div>
+
+      <div class="select-menu-list select-menu-tab-bucket js-select-menu-tab-bucket" data-tab-filter="tags">
+        <div data-filterable-for="context-commitish-filter-field" data-filterable-type="substring">
+
+
+        </div>
+
+        <div class="select-menu-no-results">Nothing to show</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+  <div class="BtnGroup float-right">
+    <a href="/StatsWithR/figures/find/3caf5ae9be4a9baf595ff83b93a0cccd0930cc94"
+          class="js-pjax-capture-input btn btn-sm BtnGroup-item"
+          data-pjax
+          data-hotkey="t">
+      Find file
+    </a>
+    <button aria-label="Copy file path to clipboard" class="js-zeroclipboard btn btn-sm BtnGroup-item tooltipped tooltipped-s" data-copied-hint="Copied!" type="button">Copy path</button>
+  </div>
+  <div class="breadcrumb js-zeroclipboard-target">
+    <span class="repo-root js-repo-root"><span class="js-path-segment"><a href="/StatsWithR/figures/tree/3caf5ae9be4a9baf595ff83b93a0cccd0930cc94"><span>figures</span></a></span></span><span class="separator">/</span><span class="js-path-segment"><a href="/StatsWithR/figures/tree/3caf5ae9be4a9baf595ff83b93a0cccd0930cc94/04_bayesian_statistics"><span>04_bayesian_statistics</span></a></span><span class="separator">/</span><span class="js-path-segment"><a href="/StatsWithR/figures/tree/3caf5ae9be4a9baf595ff83b93a0cccd0930cc94/04_bayesian_statistics/week_04"><span>week_04</span></a></span><span class="separator">/</span><span class="js-path-segment"><a href="/StatsWithR/figures/tree/3caf5ae9be4a9baf595ff83b93a0cccd0930cc94/04_bayesian_statistics/week_04/5.2.1_Bayesian_linear_regression"><span>5.2.1_Bayesian_linear_regression</span></a></span><span class="separator">/</span><span class="js-path-segment"><a href="/StatsWithR/figures/tree/3caf5ae9be4a9baf595ff83b93a0cccd0930cc94/04_bayesian_statistics/week_04/5.2.1_Bayesian_linear_regression/R"><span>R</span></a></span><span class="separator">/</span><strong class="final-path">5.2.1_Bayesian_linear_regression.Rmd</strong>
+  </div>
+</div>
+
+<include-fragment class="commit-tease" src="/StatsWithR/figures/contributors/3caf5ae9be4a9baf595ff83b93a0cccd0930cc94/04_bayesian_statistics/week_04/5.2.1_Bayesian_linear_regression/R/5.2.1_Bayesian_linear_regression.Rmd">
+  <div>
+    Fetching contributors&hellip;
+  </div>
+
+  <div class="commit-tease-contributors">
+    <img alt="" class="loader-loading float-left" height="16" src="https://assets-cdn.github.com/images/spinners/octocat-spinner-32-EAF2F5.gif" width="16" />
+    <span class="loader-error">Cannot retrieve contributors at this time</span>
+  </div>
+</include-fragment>
+<div class="file">
+  <div class="file-header">
+  <div class="file-actions">
+
+    <div class="BtnGroup">
+      <a href="/StatsWithR/figures/raw/3caf5ae9be4a9baf595ff83b93a0cccd0930cc94/04_bayesian_statistics/week_04/5.2.1_Bayesian_linear_regression/R/5.2.1_Bayesian_linear_regression.Rmd" class="btn btn-sm BtnGroup-item" id="raw-url">Raw</a>
+        <a href="/StatsWithR/figures/blame/3caf5ae9be4a9baf595ff83b93a0cccd0930cc94/04_bayesian_statistics/week_04/5.2.1_Bayesian_linear_regression/R/5.2.1_Bayesian_linear_regression.Rmd" class="btn btn-sm js-update-url-with-hash BtnGroup-item">Blame</a>
+      <a href="/StatsWithR/figures/commits/3caf5ae9be4a9baf595ff83b93a0cccd0930cc94/04_bayesian_statistics/week_04/5.2.1_Bayesian_linear_regression/R/5.2.1_Bayesian_linear_regression.Rmd" class="btn btn-sm BtnGroup-item" rel="nofollow">History</a>
+    </div>
+
+
+        <button type="button" class="btn-octicon disabled tooltipped tooltipped-nw"
+          aria-label="You must be on a branch to make or propose changes to this file">
+          <svg aria-hidden="true" class="octicon octicon-pencil" height="16" version="1.1" viewBox="0 0 14 16" width="14"><path d="M0 12v3h3l8-8-3-3-8 8zm3 2H1v-2h1v1h1v1zm10.3-9.3L12 6 9 3l1.3-1.3a.996.996 0 0 1 1.41 0l1.59 1.59c.39.39.39 1.02 0 1.41z"></path></svg>
+        </button>
+        <button type="button" class="btn-octicon btn-octicon-danger disabled tooltipped tooltipped-nw"
+          aria-label="You must be on a branch to make or propose changes to this file">
+          <svg aria-hidden="true" class="octicon octicon-trashcan" height="16" version="1.1" viewBox="0 0 12 16" width="12"><path d="M11 2H9c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1H2c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1v9c0 .55.45 1 1 1h7c.55 0 1-.45 1-1V5c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm-1 12H3V5h1v8h1V5h1v8h1V5h1v8h1V5h1v9zm1-10H2V3h9v1z"></path></svg>
+        </button>
+  </div>
+
+  <div class="file-info">
+      220 lines (173 sloc)
+      <span class="file-info-divider"></span>
+    15.7 KB
+  </div>
+</div>
+
+  
+  <div id="readme" class="readme blob instapaper_body">
+    <article class="markdown-body entry-content" itemprop="text"><hr>
+
+<p>title: "Bayesian linear regression"
+author: Dr Merlise A Clyde, Duke University
+output: html_document
+  keep_md: true</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-e">knitr</span><span class="pl-k">::</span><span class="pl-smi">opts_chunk</span><span class="pl-k">$</span>set(<span class="pl-v">echo</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>)
+<span class="pl-v">myblue</span> <span class="pl-k">=</span> rgb(<span class="pl-c1">86</span>,<span class="pl-c1">155</span>,<span class="pl-c1">189</span>, <span class="pl-v">name</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>myblue<span class="pl-pds">"</span></span>, <span class="pl-v">max</span><span class="pl-k">=</span><span class="pl-c1">256</span>)
+<span class="pl-v">mydarkgrey</span> <span class="pl-k">=</span> rgb(.<span class="pl-c1">5</span>,.<span class="pl-c1">5</span>,.<span class="pl-c1">5</span>, <span class="pl-v">name</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>mydarkgrey<span class="pl-pds">"</span></span>, <span class="pl-v">max</span><span class="pl-k">=</span><span class="pl-c1">1</span>)</pre></div>
+
+<p>In this section, we turn to Bayesian inference in simple linear regression. We will use a reference prior distribution that provides a connection between the frequentist solution and Bayesian answers. This provides a baseline analysis for comparison with more informative prior distributions. To illustrate the ideas, we'll use an example to predict body fat. Obtaining accurate measurements of body fat is expensive and not something that can be done easily at home. Instead predictive models that can predict the percentage of body fat using readily available measurements such as abdominal circumference are easy to use and inexpensive. We illustrate this using the <code>bodyfat</code> data from the library <code>BAS</code>. </p>
+
+<p>To start, download the <code>BAS</code> package from CRAN (if you have not installed it already) and load the library to access the dataframe.  </p>
+
+<div class="highlight highlight-source-r"><pre>library(<span class="pl-smi">BAS</span>)
+data(<span class="pl-smi">bodyfat</span>)
+summary(<span class="pl-smi">bodyfat</span>)</pre></div>
+
+<p>This includes 252 measurements on men of body fat and other measurements, such as waist circumference (Abdomen).  We will use Abdomen to illustrate Bayesian simple linear regression.   The figure below shows the percent body fat obtained from under water weighing and the abdominal circumference for 252 men. To predict body fat, the line  overlayed on the scatter plot illustrates the best fitting ordinary least squares line obtained with <code>lm</code>.</p>
+
+<h3><a id="user-content-scatterplot-and-ols-line" class="anchor" href="#scatterplot-and-ols-line" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Scatterplot and OLS line</h3>
+
+<div class="highlight highlight-source-r"><pre>plot(<span class="pl-smi">Bodyfat</span> <span class="pl-k">~</span> <span class="pl-smi">Abdomen</span>, <span class="pl-v">data</span><span class="pl-k">=</span><span class="pl-smi">bodyfat</span>, 
+     <span class="pl-v">xlab</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>abdomen circumference (cm)<span class="pl-pds">"</span></span>, 
+     <span class="pl-v">col</span><span class="pl-k">=</span><span class="pl-smi">myblue</span>, <span class="pl-v">pch</span><span class="pl-k">=</span><span class="pl-c1">16</span>, <span class="pl-v">main</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+<span class="pl-v">bodyfat.lm</span> <span class="pl-k">=</span> lm(<span class="pl-smi">Bodyfat</span> <span class="pl-k">~</span> <span class="pl-smi">Abdomen</span>, <span class="pl-v">data</span><span class="pl-k">=</span><span class="pl-smi">bodyfat</span>)
+summary(<span class="pl-smi">bodyfat.lm</span>)
+<span class="pl-v">beta</span> <span class="pl-k">=</span> coef(<span class="pl-smi">bodyfat.lm</span>)
+abline(<span class="pl-smi">beta</span>, <span class="pl-v">lwd</span><span class="pl-k">=</span><span class="pl-c1">4</span>, <span class="pl-v">col</span><span class="pl-k">=</span><span class="pl-c1">1</span>)</pre></div>
+
+<p>This has an estimated slope, $\hat{\beta}$ of <code>r round(beta[2],2)</code> and an estimated intercept, $\hat{\alpha}$, of about <code>r round(beta[1],1)</code>%. For every additional centimeter, we expect body fat to increase by <code>r round(beta[2],2)</code>%. The negative interceptive course does not make sense as a physical model, but neither does predicting a male with a waist of zero centimeters. Nevertheless, this linear regression may be an accurate approximation for prediction purposes for measurements that are in the observed range for this population. </p>
+
+<p>The residuals, which provide an estimate of the fitting error, are equal to $\hat{\epsilon}_i = y_i = \hat{y}_i$ and are the difference between the observed $y_i$ and fitted values $\hat{y} =  \hat{\alpha} + \hat{\beta} x_i$ where $x_i$ is the abdominal circumference for the $i$th male  and are used for diagnostics as well as estimating $\sigma^2$ via the mean squared error, which is the sum of the squared errors 
+$$\hat{\sigma}^2 =  \frac{\sum \hat{\epsilon}_i^2}{n-2}$$
+divided by the degrees of freedom, 
+where the degrees of freedom are $n - 2$ or the number of observations adjusted for the number of parameters that we estimated in the regression.  The MSE, $\hat{\sigma}^2$, maybe obtained from the output as the square of the entry labeled "residual standard error".</p>
+
+<p>Since residuals and fitted values are uncorrelated with the expected value of the residuals equal to zero if the model is correct,  the scatterplot of residuals  versus fitted provides an additional visual check of the model adequacy.</p>
+
+<div class="highlight highlight-source-r"><pre>plot(residuals(<span class="pl-smi">bodyfat.lm</span>) <span class="pl-k">~</span> fitted(<span class="pl-smi">bodyfat.lm</span>))
+abline(<span class="pl-v">h</span><span class="pl-k">=</span><span class="pl-c1">0</span>)</pre></div>
+
+<p>With the exception of the one observation for the individual with the largest waist measurement, the residual plot suggest that the linear regression is a reasonable approximation.</p>
+
+<p>Let's now turn to the Bayesian answer and show how to obtain a reference posterior distribution using the ordinary least squares output.</p>
+
+<h3><a id="user-content-bayesian-estimation-using-the-reference-prior" class="anchor" href="#bayesian-estimation-using-the-reference-prior" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Bayesian Estimation using the reference prior</h3>
+
+<p>The Bayesian model starts with the same model as the classical frequentist:
+$$Y_i = \alpha + \beta X_i + \epsilon_i$$
+with the assumption that the errors $\epsilon_i$ are independent and identically distributed as normal random variables with mean zero and constant variance $\sigma^2$.  This assumption is exactly the same used for classical inference for testing and constructing confidence intervals.   The diagnostic plots from frequentist model fitting for checking residuals, may be used to help check this assumption</p>
+
+<div class="highlight highlight-source-r"><pre>plot(<span class="pl-smi">bodyfat.lm</span>, <span class="pl-v">which</span><span class="pl-k">=</span><span class="pl-c1">2</span>)</pre></div>
+
+<p>where the quantiles of the residuals (estimated errors) are plotted against their theoretical values or what we would expect if the data were normally distributed.</p>
+
+<p>A conjugate analysis would use a bivariate normal distribution for the coefficients conditional on $\sigma^2$, where $\sigma$  provides scaling in term of units for the response. This corresponds to  $\alpha$ given  $\sigma^2$ being normally distributed 
+$$\alpha \mid \sigma^2 \sim N(a_0, \sigma^2 S_{\alpha})$$
+with a mean $a_0$, and a variance controlled by the parameter $S_{\alpha}$ that controls how concentrated our prior beliefs are about the prior mean.
+Similarly, $\beta$ is normally distributed given $\sigma^2$
+$$\beta \mid \sigma^2 \sim N(b_0, \sigma^2 S_{\beta}$$
+with a mean of $b_0$ and variance that is $\sigma^2 S_{\beta}$.
+The covariance between $\alpha$ and $\beta$  is $\sigma^2 S_{\alpha, \beta}$ where $S_{\alpha, \beta}$ is parameter that describes a priori our beliefs about how $\alpha$ and $\beta$ vary together. If $S_{\alpha, \beta}$ is 0, then a priori $\alpha$ will be independent of $\beta$, conditional on $\sigma^2$.   To complete the conjugate specification, we would assign $1/\sigma^2$ a gamma distribution
+$$1/\sigma^2 \sim G(\nu_0/2, \nu_0 \sigma^2_0/2)$$
+with $\nu_0$ degrees of freedom and the hyper-parameter $\sigma^2_0$ is a prior estimate of $\sigma^2$.  Because of conjugacy, the posterior distributions will be in the same Normal-Gamma family, with simple rules to update the parameters, however this does require eliciting several hyper-paramters.</p>
+
+<p>As an alternative or starting point, it is useful to provide a default or reference analysis as a starting point. The reference prior distribution is obtained as a limit of the normal distributions as those variance and covariance parameters go to infinity and is flat or uniform in $\alpha$ and $\beta$. The limit of the conjugate gamma prior, with prior degrees of freedom going to 0, provides the reference prior for $\sigma^2$ that we've used previously, $p(\sigma^2) \propto 1/\sigma^2$.</p>
+
+<p>The joint "prior"" distribution is written as
+$$p(\beta_0, \beta_1, \phi) \propto 1/\phi$$
+which is not a proper distribution.  However  under this "improper" prior distribution, the posterior distribution is in fact proper if $n &gt; 2$ with the posterior distribution of the coefficients<br>
+centered at the ordinary least squares estimates, e.g. 
+$$\alpha \mid \sigma^2, \text{data } \sim N(\hat{\alpha}, \sigma^2(1/n + 1/SXX)$$ 
+where $SXX = \sum_i (X_i - \bar{X})^2$ and
+$$\beta \mid \sigma^2, \text{data } \sim N(\hat{\beta}), \sigma^2/SXX)$$
+are the marginal posterior distributions of the slope and intercept condional on $\sigma^2$.
+Unconditional on $\sigma^2$,  the posterior distributions become  Student $t$ distributions where 
+$$\alpha \mid \text{data } \sim t_{n-2}(\hat{\alpha}, \sigma^2(1/n + 1/SXX)$$ 
+and 
+$$\beta \mid  \text{data } \sim t_{n-2}(\hat{\beta}), \sigma^2/SXX)$$
+with degrees of freedom $n - 2$ and the location and scale parameters corresponding to the OLS estimates and standard errors squared.  The posterior credible intervals under this "reference" prior are in fact numerically equivalent to the confidence intervals from the classical frequentist analysis, providing a baseline for other Bayesian analyses with more informative prior distributions or perhaps other "objective" prior distributions, such as a student-t prior with 1 degree of freedom which is known as the Cauchy.</p>
+
+<p>We can use <code>lm</code> to obtain the OLS estimates used in the posterior distributions and credible intervals.  </p>
+
+<div class="highlight highlight-source-r"><pre>summary(<span class="pl-smi">bodyfat.lm</span>)
+<span class="pl-v">out</span> <span class="pl-k">=</span> summary(<span class="pl-smi">bodyfat.lm</span>)<span class="pl-k">$</span><span class="pl-smi">coef</span>[, <span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-c1">2</span>]
+<span class="pl-smi">out</span></pre></div>
+
+<p>The columns labeled Estimate and Std. Error are equivalent to the posterior means and standard deviations respectively, which you could use to manually form  credible intervals.  These intervals are the same as the frequentist confidence intervals, but we now interprete from a Bayesian perspective: </p>
+
+<p>The <code>confint</code> function provides 95% confidence intervals, which under the reference prior are equivalent to 95% credible intervals.  The code below extracts them and just relabels the output. </p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-v">out</span> <span class="pl-k">=</span> cbind(<span class="pl-smi">out</span>, confint(<span class="pl-smi">bodyfat.lm</span>))
+colnames(<span class="pl-smi">out</span>) <span class="pl-k">=</span> c(<span class="pl-s"><span class="pl-pds">"</span>posterior mean<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>sd<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>2.5<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>97.5<span class="pl-pds">"</span></span>)
+round(<span class="pl-smi">out</span>, <span class="pl-c1">2</span>)</pre></div>
+
+<h3><a id="user-content-credible-intervals-for-the-mean-and-predictions" class="anchor" href="#credible-intervals-for-the-mean-and-predictions" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Credible Intervals for the Mean and Predictions</h3>
+
+<p>We can also use the classical OLS functions to obain 95% intervals for the mean at a point $x$.  The mean of $Y$ at the point $x_i$ is $\alpha + x_i \beta$, with a posterior distribution that is
+$$
+\alpha + x_i \beta \mid \text{data } \sim 
+t_{n-2}(\hat{\alpha} + x_i \hat{\beta}, S^2_{Y_i \mid X_i})
+$$
+where 
+$$S^2_{Y_i \mid X_i} = \hat{\sigma}^2 \left( 1/n + \frac{(x_i - \bar{x})^2}{SXX} \right)$$
+while for predicting a new observation at a point $x^<em>$, the distribution is Student $t$
+$$Y^</em> \mid \text{ data}, x^* t_{n-2}(\hat{\alpha} + x^* \hat{\beta}, S^2_{Y^* \mid x^<em>})) $$
+where 
+$$S^2_{Y^</em> \mid x^*} = \hat{\sigma}^2 \left(1 +  1/n + \frac{(x_i - \bar{x})^2}{SXX} \right).$$</p>
+
+<p>The variance for predicting a new observation has an extra $\hat{\sigma}^2$ which come from the uncertainty of a new observation about the unknown regression line.</p>
+
+<p>We can extract these intervals using the <code>predict</code> function:</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-v">x</span> <span class="pl-k">=</span> <span class="pl-smi">bodyfat</span><span class="pl-k">$</span><span class="pl-smi">Abdomen</span>
+<span class="pl-v">y</span><span class="pl-k">=</span> <span class="pl-smi">bodyfat</span><span class="pl-k">$</span><span class="pl-smi">Bodyfat</span>
+<span class="pl-smi">xnew</span> <span class="pl-k">&lt;-</span> seq(min(<span class="pl-smi">x</span>), max(<span class="pl-smi">x</span>), <span class="pl-v">length.out</span> <span class="pl-k">=</span> <span class="pl-c1">100</span>)
+<span class="pl-smi">ynew</span> <span class="pl-k">&lt;-</span> <span class="pl-k">data.frame</span>(predict(<span class="pl-smi">bodyfat.lm</span>, <span class="pl-v">newdata</span> <span class="pl-k">=</span> <span class="pl-k">data.frame</span>(<span class="pl-v">Abdomen</span> <span class="pl-k">=</span> <span class="pl-smi">xnew</span>), 
+                   <span class="pl-v">interval</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>confidence<span class="pl-pds">"</span></span>, <span class="pl-v">level</span> <span class="pl-k">=</span> <span class="pl-c1">0.95</span>))
+plot(<span class="pl-smi">x</span>,<span class="pl-smi">y</span>, <span class="pl-v">xlab</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>abdomen<span class="pl-pds">"</span></span>, <span class="pl-v">ylab</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>bodyfat<span class="pl-pds">"</span></span>, <span class="pl-v">col</span><span class="pl-k">=</span><span class="pl-smi">myblue</span>, <span class="pl-v">pch</span><span class="pl-k">=</span><span class="pl-c1">16</span>)
+lines(<span class="pl-smi">ynew</span><span class="pl-k">$</span><span class="pl-smi">lwr</span> <span class="pl-k">~</span> <span class="pl-smi">xnew</span>, <span class="pl-v">lty</span> <span class="pl-k">=</span> <span class="pl-c1">2</span>, <span class="pl-v">lwd</span><span class="pl-k">=</span><span class="pl-c1">3</span>, <span class="pl-v">col</span><span class="pl-k">=</span><span class="pl-smi">mydarkgrey</span>)
+lines(<span class="pl-smi">ynew</span><span class="pl-k">$</span><span class="pl-smi">upr</span> <span class="pl-k">~</span> <span class="pl-smi">xnew</span>, <span class="pl-v">lty</span> <span class="pl-k">=</span> <span class="pl-c1">2</span>, <span class="pl-v">lwd</span><span class="pl-k">=</span><span class="pl-c1">3</span>, <span class="pl-v">col</span><span class="pl-k">=</span><span class="pl-smi">mydarkgrey</span>)
+abline(<span class="pl-smi">bodyfat.lm</span>, <span class="pl-v">col</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>orange<span class="pl-pds">"</span></span>)
+<span class="pl-smi">ynew</span> <span class="pl-k">&lt;-</span> <span class="pl-k">data.frame</span>(predict(<span class="pl-smi">bodyfat.lm</span>, <span class="pl-v">newdata</span> <span class="pl-k">=</span> <span class="pl-k">data.frame</span>(<span class="pl-v">Abdomen</span> <span class="pl-k">=</span> <span class="pl-smi">xnew</span>), 
+                   <span class="pl-v">interval</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>prediction<span class="pl-pds">"</span></span>, <span class="pl-v">level</span> <span class="pl-k">=</span> <span class="pl-c1">0.95</span>))
+lines(<span class="pl-smi">ynew</span><span class="pl-k">$</span><span class="pl-smi">lwr</span> <span class="pl-k">~</span> <span class="pl-smi">xnew</span>, <span class="pl-v">lty</span> <span class="pl-k">=</span> <span class="pl-c1">3</span>, <span class="pl-v">lwd</span><span class="pl-k">=</span><span class="pl-c1">3</span>, <span class="pl-v">col</span><span class="pl-k">=</span><span class="pl-smi">mydarkgrey</span>)
+lines(<span class="pl-smi">ynew</span><span class="pl-k">$</span><span class="pl-smi">upr</span> <span class="pl-k">~</span> <span class="pl-smi">xnew</span>, <span class="pl-v">lty</span> <span class="pl-k">=</span> <span class="pl-c1">3</span>, <span class="pl-v">lwd</span><span class="pl-k">=</span><span class="pl-c1">3</span>, <span class="pl-v">col</span><span class="pl-k">=</span><span class="pl-smi">mydarkgrey</span>)
+points(<span class="pl-smi">bodyfat</span>[<span class="pl-c1">39</span>,<span class="pl-s"><span class="pl-pds">"</span>Abdomen<span class="pl-pds">"</span></span>], <span class="pl-smi">bodyfat</span>[<span class="pl-c1">39</span>,<span class="pl-s"><span class="pl-pds">"</span>Bodyfat<span class="pl-pds">"</span></span>], <span class="pl-v">col</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>orange<span class="pl-pds">"</span></span>, <span class="pl-v">cex</span><span class="pl-k">=</span><span class="pl-c1">5</span>)
+legend(<span class="pl-c1">110</span>,<span class="pl-c1">15</span>, <span class="pl-v">legend</span><span class="pl-k">=</span>c(<span class="pl-s"><span class="pl-pds">"</span>Posterior mean<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>95% CI for mean<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>95% CI for predictions<span class="pl-pds">"</span></span>), 
+       <span class="pl-v">col</span><span class="pl-k">=</span>c(<span class="pl-s"><span class="pl-pds">"</span>orange<span class="pl-pds">"</span></span>,rep(<span class="pl-smi">mydarkgrey</span>, <span class="pl-c1">2</span>)), <span class="pl-v">lwd</span><span class="pl-k">=</span><span class="pl-c1">3</span>, <span class="pl-v">lty</span><span class="pl-k">=</span>c(<span class="pl-c1">1</span>,<span class="pl-c1">2</span>, <span class="pl-c1">3</span>))
+</pre></div>
+
+<p>Note in the above the legend has "CI" - in this case using CI for confidence interval and credible interval is correct.  The difference comes down to the interpretation. Let's look at prediction at the same abdominal circumference as in case 39.</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-v">pred.39</span> <span class="pl-k">=</span> predict(<span class="pl-smi">bodyfat.lm</span>, <span class="pl-v">newdata</span><span class="pl-k">=</span><span class="pl-smi">bodyfat</span>[<span class="pl-c1">39</span>,], <span class="pl-v">interval</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>prediction<span class="pl-pds">"</span></span>, <span class="pl-v">level</span><span class="pl-k">=</span>.<span class="pl-c1">095</span>)</pre></div>
+
+<p>Based on the data that we  have seen, a Bayesian would expect that  a man with  waist circumference of 
+<code>r bodyfat[39, "Abdomen"]</code> centimeters or 
+<code>r round(bodyfat[39, "Abodomen"]/2.54,3)</code> inches should have bodyfat
+of <code>r round(pred.39[1],3)</code> with a 95% chance that it is between
+<code>r  round(pred.39[2],3)</code> and <code>r  round(pred.39[3],3)</code> percent.</p>
+
+<p>While we expect the majority of the data will be within the prediction intervals (the small dashed lines), observation 39 seems to be well below the interval.  We nest examine Bayesian methods to calculale the probablity that the case is abnormal or an outlier by falling more than $k$ standard deviations from either side of the mean.</p>
+
+<h3><a id="user-content-outliers" class="anchor" href="#outliers" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Outliers</h3>
+
+<p>The plot and predictive intervals suggest that predictions for Case 39 are not well captured by the model. There is always the possibility that this case does not meet the assumptions of the simple linear model (wrong mean or variance) or could be in error.  Model diagnostics such as plots of  residuals versus fitted are useful in identifying potiential outliers, but we can also use the Bayesian paradigm to go further.</p>
+
+<p>The article by Chaloner &amp; Brant (1988)  suggested on approach for defining outliers and then calculating the probability that an case or multiple cases were outliers.  The assumed model for our simple linear regression is
+$Y_i = \beta_0 + \beta_1 x_i + \epsilon_i$ with $\epsilon_i$ having independent, identical distributions that are normal with mean zero 
+and constant variance $\sigma^2$, $N(0, \sigma^2)$.   Chaloner &amp; Brant consider outliers to be points where the error or model discrepancy
+$\epsilon_i$ is greater than $\kappa$ standard deviations in either direction from zero, 
+and then proceed to calculate the posterior probability that a case is an outlier as $$P(|\epsilon| &gt; \kappa \sigma \mid data).$$<br>
+Since $Y_i - \beta_0 - \beta_1 = \epsilon_i$, this is equivalent to $P(|Y_i - \beta_0 - \beta_1| &gt; \kappa \sigma \mid data)$.  </p>
+
+<p>The code for calculating the probability of outliers involves integration (for more details see the paper), so to simplify life, we have  implemented this in the function <code>Bayes.outlier.prob</code> that can be sourced from the file <code>bayes-outliers.R</code>.   Feel free to dig into the code!  </p>
+
+<p>Applying this to the body fat data for case 39, </p>
+
+<div class="highlight highlight-source-r"><pre>source(<span class="pl-s"><span class="pl-pds">"</span>bayes-outliers.R<span class="pl-pds">"</span></span>)
+library(<span class="pl-smi">mvtnorm</span>)
+<span class="pl-v">outliers</span><span class="pl-k">=</span> Bayes.outlier.prob(<span class="pl-smi">bodyfat.lm</span>) 
+<span class="pl-c">#The default is to consider k=3 standard deviations.</span>
+<span class="pl-v">prob.39</span> <span class="pl-k">=</span> <span class="pl-smi">outliers</span><span class="pl-k">$</span><span class="pl-smi">prob.outlier</span>[<span class="pl-c1">39</span>]
+<span class="pl-smi">prob.39</span>
+</pre></div>
+
+<p>we see that this case has an extremely high probability (<code>r prob.39</code>) of being more an outlier, that is the error is greater than $k=3$ standard deviations, based on the fitted model and data.</p>
+
+<p>With $\kappa = 3$, however, there may be a high probablity a priori of at least one outlier in a large sample.  We can compute this using</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-v">n</span> <span class="pl-k">=</span> nrow(<span class="pl-smi">bodyfat</span>)
+<span class="pl-c"># probability of no outliers</span>
+(<span class="pl-c1">1</span> <span class="pl-k">-</span> (<span class="pl-c1">2</span><span class="pl-k">*</span>pnorm(<span class="pl-k">-</span><span class="pl-c1">3</span>)))<span class="pl-k">^</span><span class="pl-smi">n</span>
+<span class="pl-c"># probability of at least one outlier</span>
+<span class="pl-c1">1</span> <span class="pl-k">-</span> (<span class="pl-c1">1</span> <span class="pl-k">-</span> (<span class="pl-c1">2</span><span class="pl-k">*</span>pnorm(<span class="pl-k">-</span><span class="pl-c1">3</span>)))<span class="pl-k">^</span><span class="pl-smi">n</span></pre></div>
+
+<p>With n =  <code>r n</code>,  the probability of at least one outlier is much larger than say the marginal probability that one point is an outlier of 0.05 and we would expect that there will be at least one point where the error is more than 3 standard deviations from zero almost 50% ot the time.
+Rather than fix $\kappa$, we can fix the prior probability of no outliers to be say 0.95 and solve for a value of $\kappa$.   </p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-v">k</span> <span class="pl-k">=</span> qnorm(.<span class="pl-c1">5</span> <span class="pl-k">+</span> .<span class="pl-c1">5</span><span class="pl-k">*</span>.<span class="pl-c1">95</span><span class="pl-k">^</span>(<span class="pl-c1">1</span><span class="pl-k">/</span><span class="pl-smi">n</span>))
+<span class="pl-smi">k</span></pre></div>
+
+<p>This leads to a larger value of $\kappa$ after adjusting for the looking at there being at least one outlier and</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-v">outliers.no</span><span class="pl-k">=</span> Bayes.outlier.prob(<span class="pl-smi">bodyfat.lm</span>, <span class="pl-v">k</span><span class="pl-k">=</span><span class="pl-smi">k</span>)
+<span class="pl-v">prob.no.39</span> <span class="pl-k">=</span> <span class="pl-smi">outliers.no</span><span class="pl-k">$</span><span class="pl-smi">prob.outlier</span>[<span class="pl-c1">39</span>]
+<span class="pl-smi">prob.no.39</span></pre></div>
+
+<p>a posterior probbility of case 39 being an outlier of <code>r prob.no.39</code>.
+While this is not strikingly large it is much larger than the marginal prior probability of</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c1">2</span><span class="pl-k">*</span>pnorm(<span class="pl-k">-</span><span class="pl-smi">k</span>)</pre></div>
+
+<h2><a id="user-content-summary" class="anchor" href="#summary" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Summary</h2>
+
+<p>There is a substantial probability that case 39 is an outlier.  If you do view it as an outlier, what are your options?  One is to investigate that case and determine if the data are in error (data entry error) and fix it.  Another if you cannot confirm there is a data error, is to delete the observation from the analysis and refit the model without that case.  If you do take this option, be sure to describe what you did so that your research is reproducible.  You may want to apply diagnostics and calculate the probability of a case being an outlier using this reduced data. As a word of caution,  if you discover that there are a large number of points that appear to be outliers, take a second look at your model assumptions as the problem may be with the model rather than the data!  A third option that we will talk about later is to combine inference under the model that retains this case as part of the population and the model that treats it as coming from another population.   This approach incorporates our uncertainty about whether the case an outlier given the data.</p>
+
+<p>The source code is based on using a reference prior for the linear model and extends to multiple regression.</p>
+</article>
+  </div>
+
+</div>
+
+<button type="button" data-facebox="#jump-to-line" data-facebox-class="linejump" data-hotkey="l" class="d-none">Jump to Line</button>
+<div id="jump-to-line" style="display:none">
+  <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="" class="js-jump-to-line-form" method="get"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /></div>
+    <input class="form-control linejump-input js-jump-to-line-field" type="text" placeholder="Jump to line&hellip;" aria-label="Jump to line" autofocus>
+    <button type="submit" class="btn">Go</button>
+</form></div>
+
+  </div>
+  <div class="modal-backdrop js-touch-events"></div>
+</div>
+
+
+    </div>
+  </div>
+
+    </div>
+
+        <div class="container site-footer-container">
+  <div class="site-footer" role="contentinfo">
+    <ul class="site-footer-links float-right">
+        <li><a href="https://github.com/contact" data-ga-click="Footer, go to contact, text:contact">Contact GitHub</a></li>
+      <li><a href="https://developer.github.com" data-ga-click="Footer, go to api, text:api">API</a></li>
+      <li><a href="https://training.github.com" data-ga-click="Footer, go to training, text:training">Training</a></li>
+      <li><a href="https://shop.github.com" data-ga-click="Footer, go to shop, text:shop">Shop</a></li>
+        <li><a href="https://github.com/blog" data-ga-click="Footer, go to blog, text:blog">Blog</a></li>
+        <li><a href="https://github.com/about" data-ga-click="Footer, go to about, text:about">About</a></li>
+
+    </ul>
+
+    <a href="https://github.com" aria-label="Homepage" class="site-footer-mark" title="GitHub">
+      <svg aria-hidden="true" class="octicon octicon-mark-github" height="24" version="1.1" viewBox="0 0 16 16" width="24"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
+</a>
+    <ul class="site-footer-links">
+      <li>&copy; 2016 <span title="0.18071s from github-fe156-cp1-prd.iad.github.net">GitHub</span>, Inc.</li>
+        <li><a href="https://github.com/site/terms" data-ga-click="Footer, go to terms, text:terms">Terms</a></li>
+        <li><a href="https://github.com/site/privacy" data-ga-click="Footer, go to privacy, text:privacy">Privacy</a></li>
+        <li><a href="https://github.com/security" data-ga-click="Footer, go to security, text:security">Security</a></li>
+        <li><a href="https://status.github.com/" data-ga-click="Footer, go to status, text:status">Status</a></li>
+        <li><a href="https://help.github.com" data-ga-click="Footer, go to help, text:help">Help</a></li>
+    </ul>
+  </div>
+</div>
+
+
+
+    
+
+    <div id="ajax-error-message" class="ajax-error-message flash flash-error">
+      <svg aria-hidden="true" class="octicon octicon-alert" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M8.865 1.52c-.18-.31-.51-.5-.87-.5s-.69.19-.87.5L.275 13.5c-.18.31-.18.69 0 1 .19.31.52.5.87.5h13.7c.36 0 .69-.19.86-.5.17-.31.18-.69.01-1L8.865 1.52zM8.995 13h-2v-2h2v2zm0-3h-2V6h2v4z"></path></svg>
+      <button type="button" class="flash-close js-flash-close js-ajax-error-dismiss" aria-label="Dismiss error">
+        <svg aria-hidden="true" class="octicon octicon-x" height="16" version="1.1" viewBox="0 0 12 16" width="12"><path d="M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48z"></path></svg>
+      </button>
+      You can't perform that action at this time.
+    </div>
+
+
+      
+      <script crossorigin="anonymous" integrity="sha256-UkOt6gRG+T2/d6+yEJixISCaJ41MlkKZuMQ4UaJqOvQ=" src="https://assets-cdn.github.com/assets/frameworks-5243adea0446f93dbf77afb21098b121209a278d4c964299b8c43851a26a3af4.js"></script>
+      <script async="async" crossorigin="anonymous" integrity="sha256-XqiTA5NotL3FQ2QWE7+otla8ZFs5QqulfuVWw46QDZQ=" src="https://assets-cdn.github.com/assets/github-5ea893039368b4bdc543641613bfa8b656bc645b3942aba57ee556c38e900d94.js"></script>
+      
+      
+      
+      
+      
+    <div class="js-stale-session-flash stale-session-flash flash flash-warn flash-banner d-none">
+      <svg aria-hidden="true" class="octicon octicon-alert" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M8.865 1.52c-.18-.31-.51-.5-.87-.5s-.69.19-.87.5L.275 13.5c-.18.31-.18.69 0 1 .19.31.52.5.87.5h13.7c.36 0 .69-.19.86-.5.17-.31.18-.69.01-1L8.865 1.52zM8.995 13h-2v-2h2v2zm0-3h-2V6h2v4z"></path></svg>
+      <span class="signed-in-tab-flash">You signed in with another tab or window. <a href="">Reload</a> to refresh your session.</span>
+      <span class="signed-out-tab-flash">You signed out in another tab or window. <a href="">Reload</a> to refresh your session.</span>
+    </div>
+    <div class="facebox" id="facebox" style="display:none;">
+  <div class="facebox-popup">
+    <div class="facebox-content" role="dialog" aria-labelledby="facebox-header" aria-describedby="facebox-description">
+    </div>
+    <button type="button" class="facebox-close js-facebox-close" aria-label="Close modal">
+      <svg aria-hidden="true" class="octicon octicon-x" height="16" version="1.1" viewBox="0 0 12 16" width="12"><path d="M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48z"></path></svg>
+    </button>
+  </div>
+</div>
+
+  </body>
+</html>
+

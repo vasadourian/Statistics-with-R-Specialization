@@ -1,0 +1,500 @@
+---
+title: "Bayesian Linear Regression"
+output: statsr:::statswithr_lab
+
+references:
+- id: Wooldridge2000
+  title:  Introductory Econometrics- A Modern Approach
+  author:
+  - family: Wooldridge
+    given: Jeffrey
+  URL: 'http://fmwww.bc.edu/ec-p/data/wooldridge/wage2.dta'
+  publisher: South-Western College Publishing
+  type: book
+  issued:
+    year: 2000
+---
+
+<div id="instructions">
+Complete all **Exercises**, and submit answers to **Questions** on the Coursera 
+platform.
+</div>
+
+## Modeling Wages 
+
+In the field of labor economics, the study of income and wages provides insight about topics ranging from gender discrimination to the benefits of higher education.  In this lab, we will analyze cross-sectional wage data in order to practice using Bayesian methods such as BIC and Bayesian Model Averaging to construct parsimonious predictive models.
+
+## Getting Started
+
+### Load packages
+
+In this lab we will explore the data using the `dplyr` package and visualize it using the `ggplot2` package for data visualization. We also may use the MASS package to implement stepwise linear regression in one of the exercises.  The data can be found in the companion package for this course, `statsr`. 
+
+Let's load the packages.
+
+```{r load-packages, message=FALSE}
+library(statsr)
+library(MASS)
+library(dplyr)
+library(ggplot2)
+library(BAS)
+```
+
+This is the first time we're using the `BAS` package. We will be using the
+`bas.lm` function from this package later in the lab to implement Bayesian Model Averaging.  Please make sure that the version of `BAS` is 1.3.0 or greater.
+
+### The data
+
+The data will be using in this lab were gathered as a random sample of 935 respondents throughout the United States. This data set was released as part of the series *Instructional Stata Datasets for Econometrics* by the Boston College Department of Economics [@Wooldridge2000].
+
+Let's load the data:
+
+```{r load-data, message=FALSE}
+data(wage)
+```
+
+variable         | description
+---------------- | -----------
+`wage`           | weekly earnings (dollars)
+`hours`          | average hours worked per week
+`IQ`             | IQ score
+`kww`            | knowledge of world work score
+`educ`           | number of years of education
+`exper`          | years of work experience
+`tenure`         | years with current employer
+`age`            | age in years
+`married`        | =1 if married
+`black`          | =1 if black
+`south`          | =1 if live in south
+`urban`          | =1 if live in a Standard Metropolitan Statistical Area
+`sibs`           | number of siblings
+`brthord`        | birth order
+`meduc`          | mother's education (years)
+`feduc`          | father's education (years)
+`lwage`          | natural log of `wage`
+
+
+1. Is this an observational study or an experiment?
+<ol>
+<li> Observational study </li>
+<li> Experiment </li>
+</ol>
+
+A
+
+## Exploring the data
+
+As with any new data set a good place to start is standard exploratory data analysis. We will begin with the `wage` variable since it will be the response variable in our models.
+
+2. Which of the following statements is **false** about the distribution of `wage`? 
+<ol>
+<li> The median of the distribution is 905. </li>
+<li> 25\% of respondents make more than 1160 dollars per week. </li> 
+<li> 7 of the respondents make less than 300 dollars per week </li> 
+<li> `wage` is right-skewed, meaning that more respondents fall below the mean wage than above it. </li>
+
+C
+</ol>
+```{r wage-dist}
+summary(wage)
+```
+```{r}
+hist(wage$wage)
+```
+
+```{r}
+length(which(wage$wage>957))
+length(which(wage$wage<957))
+length(which(wage$wage<300))
+```
+
+
+Since `wage` is our response, we would like to explore the relationship of the other variables as predictors.
+
+<div id="exercise">
+**Exercise:** Excluding `wage` and `lwage`, select two other variables that you think might be a good predictor of `wage`.  Visualize their relationships with `wage` using appropriate plots.
+</div>
+
+
+```{r two-vars-eda}
+
+ggplot(data=wage, aes(x = wage, y = educ)) +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+```
+
+```{r}
+ggplot(data=wage, aes(x = wage, y = exper)) +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+```
+
+```{r}
+ggplot(data=wage, aes(x = wage, y = iq)) +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+```
+
+```{r}
+cor(wage$wage,wage$educ)
+cor(wage$wage,wage$exper)
+cor(wage$wage,wage$iq)
+```
+
+## Simple linear regression
+
+One possible, simplistic, explanation for the variation in wages that we see in the data is that smarter people make more money. The plot below visualizes a scatterplot between weekly wage and IQ score.
+
+```{r scatter-score-bty_avg}
+ggplot(data = wage, aes(x = iq, y = wage)) +
+  geom_point()
+```
+
+This plot is rather noisy.  While there may be a slight positive linear relationship between IQ score and wage, IQ is at best a crude predictor of wages.  We can quantify this by fitting a simple linear regression.
+
+
+```{r wage-iq-model}
+m_wage_iq = lm(wage ~ iq, data = wage)
+m_wage_iq$coefficients
+summary(m_wage_iq)$sigma
+```
+
+```{r}
+plot(wage$wage ~ m_wage_iq$residuals)
+```
+
+```{r}
+hist(m_wage_iq$residuals)
+```
+
+
+Recall from the lectures that under the model
+
+$$wage_i = \alpha + \beta \cdot iq_i + \epsilon_i$$
+
+if $\epsilon_i \sim N(0, \sigma^2)$ and the reference prior $p(\alpha, \beta, \sigma^2) \propto 1/\sigma^2$ is used, then the Bayesian posterior means and standard deviations will be equal to the frequentist estimates and standard errors respectively.  
+
+The Bayesian model specification assumes that the errors are normally distributed with a constant variance. As with the frequentist approach we check this assumption by examining the distribution of the residuals for the model.  If the residuals are highly non-normal or skewed, the assumption is violated and any subsequent inference is not valid.
+
+
+3. Examine the residuals of `m_wage_iq`.  Is the assumption of normally distributed errors valid?
+<ol>
+<li> Yes, since the distribution of the dependent variable (wage) is roughly normally distributed. </li>
+<li> Yes, since the distribution of the residuals of the model looks approximately normal. </li> 
+<li> No, since the distribution of the residuals of the model is left-skewed. </li> 
+<li> No, since the distribution of the residuals of the model is right-skewed.  </li>
+</ol>
+
+D
+
+```{r}
+m_wage_educ = lm(wage ~ educ, data = wage)
+m_wage_educ$coefficients
+plot(wage$wage ~ m_wage_educ$residuals)
+```
+
+
+<div id="exercise">
+**Exercise:** Refit the model, this time using `educ` (education) as the independent variable.  Does your answer to the previous exercise change?
+</div>
+```{r educ-resid}
+hist(m_wage_educ$residuals)
+```
+
+
+## Variable transformation
+
+One way to accommodate the right-skewness in the data is to (natural) log transform the dependent variable. Note that this is only possible if the variable is strictly positive, since the log of negative value is not defined and $\log(0) = -\infty$.  Let's try to fit a linear model with log-wage as the dependent variable.  Question 4 will be based on this log transformed model.
+
+```{r lwage-iq-model}
+m_lwage_iq = lm(lwage ~ iq, data = wage)
+```
+
+<div id="exercise">
+**Exercise:** Examine the residuals of this model.  Is the assumption of normally distributed residuals reasonable?
+</div>
+```{r log-resid}
+plot(wage$wage ~ m_lwage_iq$residuals)
+```
+
+```{r}
+hist(m_lwage_iq$residuals)
+```
+
+
+Recall that the posterior distribution of $\alpha$ and $\beta$ given $\sigma^2$ is normal, but marginally follows a $t$ distribution with $n-p-1$ degrees of freedom.  In this case, $p=1$, since IQ is the only predictor of log-wage included in our model. Therefore both $\alpha$ and $\beta$ will have a posteriors that follow a $t$ distribution 933 degrees of freedom - since the df is so large these distributions will actually be approximately normal.
+
+```{r}
+m_lwage_iq = bas.lm(lwage ~ iq, data = na.omit(wage[, c("lwage", "iq")]),
+                    prior="BIC", bestmodel=c(1,1), n.models=1)
+confint(coef(m_lwage_iq))
+```
+
+
+4. Under the reference prior $p(\alpha, \beta, \sigma^2) \propto 1/\sigma^2$, give a 95\% posterior credible interval for $\beta$, the coefficient of IQ.
+<ol>
+<li> (0.00793, 0.00967) </li>
+<li> (0.00709, 0.01050) </li> 
+<li> (0.00663, 0.01098) </li> 
+<li> (0.00010, 0.01750)  </li>
+</ol>
+
+B
+
+<div id="exercise">
+**Exercise:** The coefficient of IQ is very small, which is expected since a one point increase in IQ score can hardly be expected to have a high multiplicative effect on wage.  One way to make the coefficient more interpretable is to standardize IQ before putting it into the model.  From this new model, an increase in IQ of 1 standard deviation (15 points) is estimated to increase wage by what percentage?
+</div>
+```{r z-iq}
+# type your code for the Exercise here, and Knit
+
+```
+
+#Multiple linear regression
+It is evident that wage can be explained by many predictors, such as experience, education, and IQ.  We can include all relevant covariates in a regression model in an attempt to explain as much wage variation as possible.   
+
+
+```{r full-lwage-model}
+m_lwage_full = lm(lwage ~ . - wage, data = wage)
+```
+
+The use of `.` in the `lm` tells R to include all covariates in the model which we then further modify with `-wage` which then excludes the `wage` variable from the model. 
+
+However, running this full model has a cost: we remove observations from our data since some measurements for (e.g. birth order, mother's education, and father's education) are missing. By default, the `lm` function does a complete-case analysis, and so it removes any observations with a missing (`NA`) value in one or more of the predictor variables. 
+
+Because of these missing values we must make an addition assumption in order for our inferences to be valid. This exclusion of rows with missing values requires that the data there is no systematic reason for the values to be missing, or in other words our data must be missing at random. For example, if all first-born children did not report their birth order, the data would not be missing at random.  Without any additional information we will assume this is reasonable and use the 663 complete observations (as opposed to the original 935) to fit the model.  Both Bayesian and frequentist methods exist to handle data sets with missing data, but they are beyond the scope of this course.  
+
+5. From the model, all else begin equal, who would you expect to make more: a married black man or a single non-black man?
+<ol>
+<li> The married black man </li>
+<li> The single non-black man </li> 
+</ol>
+
+A
+```{r}
+# type your code for Question 5 here, and Knit
+
+```
+
+
+As you can see from a quick summary of the full linear model, many coefficients of independent variables are not statistically significant.  In previous labs within this specialization, you selected variables based on Adjusted $R^2.$  This module introduced the Bayesian Information Criterion (BIC), which is a metric that can be used for model selection.  BIC is based on model fit, while simultaneously penalizing the number of parameters in proportion to the sample size.  We can calculate the BIC of the full linear model using the command below:
+
+```{r}
+BIC(m_lwage_full)
+```
+
+We can compare the BIC of the full model with that of a reduced model.  Let's try to remove birth order from the model.  To ensure that the observations remain the same, the data set can be specified as `na.omit(wage)`, which includes only the observations with no missing values.
+
+```{r}
+m_lwage_nobrthord = lm(lwage ~ . -wage -brthord, data = na.omit(wage))
+BIC(m_lwage_nobrthord)
+```
+
+As you can see, removing birth order from the regression reduces BIC, which we seek to minimize by model selection.
+
+6. Elimination of which variable from the full model yielded the lowest BIC?
+<ol>
+<li> `brthord`
+<li> `sibs`
+<li> `feduc`
+<li> `meduc`
+</ol>
+
+C
+
+```{r}
+BIC(lm(lwage ~ . - wage - feduc, data = wage))
+```
+
+
+<div id="exercise">
+**Exercise:** R has a function `stepAIC` that will work backwards through the model space, removing variables until BIC can be no longer be lowered.  It takes as inputs a full model, and a penalty parameter $k$.  Find the best model according to BIC (in which case $k = \log(n)$).  Remember to use `na.omit(wage)` as your data set.
+</div>
+
+```{r stepBIC}
+# type your code for the Exercise here, and Knit
+
+```
+
+## Bayesian model averaging
+Often, several models are equally plausible and choosing only one ignores the inherent uncertainty involved in choosing the variables to include in the model.  A way to get around this problem is to implement Bayesian model averaging (BMA), in which multiple models are averaged to obtain posteriors of coefficients and predictions from new data.  Dr. Merlise Clyde is the primary author of the R package `BAS`, which implements BMA.  We can use this for either implementing BMA or selecting models.
+We start by applying BMA to the wage data.
+
+```{r bas-wage}
+wage_no_na = na.omit(wage)
+bma_lwage = bas.lm(lwage ~ . -wage, data = wage_no_na,
+                   prior = "BIC", 
+                   modelprior = uniform())
+bma_lwage
+summary(bma_lwage)
+```
+
+Printing the model object and the summary command gives us both the posterior model inclusion probability for each variable and the most probable models.  For example, the posterior probability that `hours` is included in the model is 0.855.  Further, the most likely model, which has posterior probability of 0.0455, includes an intercept, hours worked, IQ, education, tenure, age, marital status, urban living status, and mother's education.  While a posterior probability of 0.0455 sounds small, it is much larger than the uniform prior probability assigned to it, since there are $2^{16}$ possible models. 
+
+It is also possible to visualize the posterior distribution of the coefficients under the model averaging approach.  We graph the posterior distribution of the coefficients of `iq` and `sibs` below.  Note that the subset command dictates which variable is plotted.
+
+```{r vis-BMA}
+par(mfrow = c(1,2))
+coef_lwage = coefficients(bma_lwage)
+plot(coef_lwage, subset = c(3,13), ask=FALSE)
+```
+
+We can also provide 95% credible intervals for these coefficients:
+
+```{r conf-BMA}
+confint(coef_lwage)
+```
+
+For questions 7-8, we'll use a reduced data set which excludes number of siblings, birth order, and parental education.
+
+```{r rem-vars-wage}
+wage_red = wage %>%
+  select(-sibs, -brthord, -meduc, -feduc)
+```
+
+7. Based on this reduced data set, according to Bayesian model averaging, which of the following variables has the lowest marginal posterior inclusion probability?
+<ol>
+<li> `kww`
+<li> `black`
+<li> `south`
+<li> `age`
+</ol>
+
+B
+
+```{r}
+bma_wage_red = bas.lm(lwage ~ . -wage, data = wage_red,
+                    prior = "BIC", 
+                    modelprior = uniform())
+coef_wage_red <- coefficients(bma_wage_red)
+confint(coef_wage_red)
+```
+
+
+8. True or False: The naive model with all variables included has posterior probability greater than 0.5. (Use a Zellner-Siow null prior for the coefficients and a Beta-Binomial (1,1) prior for the models)
+<ol>
+<li> True
+<li> False
+</ol>
+
+A (True)
+
+```{r}
+
+question8 = bas.lm(lwage ~ . -wage, data = na.omit(wage),
+                    prior = "ZS-null", 
+                    modelprior = beta.binomial(alpha=1.0, beta=1.0))
+summary(question8)
+```
+
+
+<div id="exercise">
+**Exercise:** Graph the posterior distribution of the coefficient of `age`, using the data set `wage_red`.
+</div>
+```{r graph}
+par(mfrow = c(1,1))
+# type your code for the Exercise here, and Knit
+
+```
+
+
+
+## Prediction
+A key advantage of Bayesian statistics is prediction and the probabilistic interpretation of predictions.  Much of Bayesian prediction is done using simulation techniques, some of which was discussed near the end of this module.  This is often applied in regression modeling, although we'll work through an example with just an intercept term.
+
+Suppose you observe four numerical observations of $y$, which are 2, 2, 0 and 0 respectively.  Assuming that $y \sim N(\mu, \sigma^2)$, under the reference prior $p(\mu,\sigma^2) \propto 1/\sigma^2$, our posterior becomes
+
+
+$$\mu|\sigma^2, y \sim N(1, \sigma^2/4)$$
+
+$$1/\sigma^2, y \sim Gamma(\alpha = 2,\beta = 2)$$
+
+To obtain the predictive distribution for $y_5$, we can first simulate $\sigma^2$ from its posterior and then $\mu$ followed by $y_5$.  Our draws of $y_5$ will be from the posterior predictive distribution.  The example below draws 10,000 times from the posterior predictive distribution of $y_5$.
+
+```{r postpred}
+set.seed(314)
+N = 100000
+phi = rgamma(N,2,2)
+sigma2 = 1/phi
+mu = rnorm(N, 1, sqrt(sigma2/4))
+y_5 = rnorm(N, mu, sqrt(sigma2))
+```
+
+9. Estimate a 95\% central credible interval for a new observation $y_5$
+<ol>
+<li> (-3.71, 5.73)
+<li> (-2.06, 4.10)
+<li> (-1.18, 3.19)
+</ol>
+
+```{r}
+
+
+```
+
+
+<div id="exercise">
+**Exercise:** In the simple example above, it is possible to use integration to calculate the posterior predictive analytically.  In this case, it is a scaled $t$ distribution with mean 1 and variance 5/4.  Plot the empirical density of $y$ alongside the actual density of the t-distribution.  How do they compare?
+</div>
+```{r tplot}
+# type your code for the Exercise here, and Knit
+
+```
+
+## Prediction with BAS
+
+Simulation is used in `BAS` to construct predictive intervals with Bayesian Model averaging, while exact inference is often possible with predictive intervals under model selection.
+
+Returning to the wage data set,  let's find predictive values under the best predictive model, the one that has predictions closest to BMA and corresponding posterior standard deviations.
+
+```{r bma_predict, cache=TRUE}
+BPM_pred_lwage =  predict(bma_lwage, estimator="BPM", se.fit=TRUE)
+bma_lwage$namesx[BPM_pred_lwage$bestmodel+1]
+```
+
+We can compare this to the Highest probability model that we found earlier and the Median Probability Model (`MPM`)
+```{r MPM}
+MPM_pred_lwage =  predict(bma_lwage, estimator="MPM")
+bma_lwage$namesx[MPM_pred_lwage$bestmodel+1]
+
+```
+
+The `MPM` includes `exper` in addition to all of the variables as the `HPM`, while the `BPM` includes  `kwh` in addition to all of the variables in the `MPM`. 
+
+<div id="exercise">
+**Exercise:**  Using the reduced data, what covariates are included in the  best predictive model,  the median probability model and the highest posterior probability model?   
+</div>
+
+
+Let's turn to see what characteristics lead to the highest wages with the `BPM` model.
+```{r opt_wage}
+opt = which.max(BPM_pred_lwage$fit)
+t(wage_no_na[opt, ])
+```
+
+A 95% credible interval for predicting log wages can be obtained by
+```{r ci}
+ci_lwage = confint(BPM_pred_lwage, parm="pred")
+ci_lwage[opt,]
+```
+
+To translated back to wages, we may exponentiate the interval
+```{r ci_wage}
+exp(ci_lwage[opt,])
+```
+
+to obtain a 95% prediction interval for the wages of an individual with covariates at the levels of the individual specified by `opt`.
+
+
+If were to use BMA, the interval would be 
+```{r}
+BMA_pred_lwage =  predict(bma_lwage, estimator="BMA", se.fit=TRUE)
+ci_bma_lwage = confint(BMA_pred_lwage, estimator="BMA")
+opt_bma = which.max(BMA_pred_lwage$fit)
+exp(ci_bma_lwage[opt_bma,])
+```
+<div id="exercise">
+**Exercise:**  Using the reduced data, construct a 95% prediction interval for the individual who is predicted to have the highest predicted wages under the `BPM`.
+</div>
+
+## References
+

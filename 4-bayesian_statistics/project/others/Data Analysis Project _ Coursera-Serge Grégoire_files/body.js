@@ -1,0 +1,1 @@
+define("bundles/phoenix/template/layout/body",["require","exports","module","bundles/phoenix/lib/view"],function(require,exports,module){"use strict";var e=require("bundles/phoenix/lib/view"),n=e.extend({name:"body",className:"c-phoenix-template-body-container"});module.exports=n});

@@ -1,0 +1,373 @@
+---
+title: "Modeling and prediction for movies"
+subtitle: "Vicken Asadourian"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+
+### Load packages
+
+
+
+```{r load-packages, message = FALSE}
+library(dplyr)
+library(ggplot2)
+library(magrittr)
+library(statsr)
+library(GGally)
+library(gridExtra)
+library(knitr)
+```
+
+
+### Load data
+
+```{r load-data}
+load("movies.Rdata")
+```
+
+
+
+* * *
+
+## Part 0: Abstract
+
+In this project I will use a dataset of 651 randomly selected movies and many factors pertaining to them, such as their mpaa rating, release date, critics' score, audience score, and others. I will perform some exploratory data analysis, followed by building a linear model to predict the critics' score of a film.
+
+## Part 1: Data
+
+The dataset is comprised of 651 randomly sampled movies produced and released before 2016. The mdata draws from imdb.com, rottentomatoes.com, and flixster.com. As this is random sampling, only correlations can be drawn. Because of the randomness of the selection and the size of the dataset, our results can be generalizable.
+
+* * *
+
+## Part 2: Research question
+
+Can the number of imdb votes, the audience rating, audience score, and knowledge of whether a movie has won an award or not be useful in predicting the critics' score of a movie?
+
+* * *
+
+## Part 3: Exploratory data analysis
+Let's take a quick look at the variables in the ```movies``` dataset.
+
+```{r}
+names(movies)
+```
+
+Let's create a variable called ```won_award``` with the levels "yes" and "no". If a movie won an award for best director, best actor, best actress, or best picture, the value for ```won_award``` would be "yes".
+
+```{r}
+movies <- movies %>%
+  mutate(won_award = ifelse(best_pic_win=="yes" | best_actor_win=="yes" | best_actress_win=="yes" | best_dir_win=="yes" , "yes", "no"))
+```
+
+Now let's take a look at ```critics_ratings``` and ```audience_rating``` and compare the two.
+
+```{r}
+require(gridExtra)
+cr_plot <- ggplot(movies, aes(x=critics_rating)) + geom_bar(fill=c("green4","green2","brown4"))
+ar_plot <- ggplot(movies, aes(x=audience_rating)) + geom_bar(fill=c("brown4","green4"))
+suppressWarnings(suppressMessages(print(grid.arrange(cr_plot, ar_plot, ncol=2))))
+```
+
+Let's take a look at the proportion of ```critics_ratings``` that are Certified Fresh or Fresh.
+To define the levels:
+
+* Fresh = 60%-74%
+
+* Certified fresh = 75%+
+
+```{r}
+( length(which(movies$critics_rating=="Certified Fresh")) + length(which(movies$critics_rating=="Fresh")) ) / ( length(which(movies$critics_rating=="Certified Fresh")) + length(which(movies$critics_rating=="Fresh")) + length(which(movies$critics_rating=="Rotten")) ) 
+```
+
+Let's take a look at the proportion of ```audience_rating``` that are upright. To define: Upright = 3.5 stars or higher (out of 5), rated by Flixster and Rotten Tomatoes Users.
+
+
+```{r}
+length(which(movies$audience_rating=="Upright")) / ( length(which(movies$audience_rating=="Spilled")) + length(which(movies$audience_rating=="Upright")) )
+```
+
+These dotcharts below are simply to visualize a sample of ```critics_score``` and ```audience_score``` to show how critics and the audience can vary on how they rate a movie. Take a look at _Mad Dog Time_, for instance.
+
+```{r, fig.width = 10, fig.height = 6}
+par(mfrow=c(1,2))
+dotchart(movies$critics_score[1:10], movies$title[1:25],xlim=c(0,100),panel.first=grid())
+dotchart(movies$audience_score[1:10], movies$title[1:25],xlim=c(0,100),panel.first=grid())
+```
+
+Now let's take a look at when movies get released.
+
+```{r}
+ggplot(movies, aes(x=thtr_rel_month)) + geom_histogram(binwidth = .2) + scale_x_continuous(breaks=seq(1,12,1),lim=c(0,13))
+```
+
+Four months stick out as having far more releases: January, June, October, and December. This makes sense intuitively; June would have the summer blockbusters, October would have the horror movies and Thanksgiving family films, and December and January would see the release of holiday films.
+
+Let's take a look at the correlation between the variables ```imdb_rating```, ```imdb_num_votes```, ```critics_rating```, ```critics_score```, ```audience_rating```, and ```audience_score```.
+
+```{r, fig.width = 10, fig.height = 10}
+suppressWarnings(suppressMessages(print(ggpairs(movies, columns=13:18))))
+```
+
+We see some clear correlations here. For instance, see the scatter plot between ```critics_score``` and ```audience_score```. This plot gives us a good idea of how these variables interact.
+
+* * *
+
+## Part 4: Modeling
+
+### The final models I've selected are:
+
+* **Using Adjusted R^2^**
+```{r eval=FALSE}
+cs_ar2_final <- lm(critics_score ~ imdb_rating + audience_score + audience_rating + imdb_num_votes, data=movies)
+```
+
+
+* **Using p-values**
+
+```{r eval=FALSE}
+cs_pv_final <- lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score, data = movies)
+```
+
+#### See below for my methods. I used forward selection to build the adjusted R^2^ model, and both forward selection and backwards elimination to build the p-value model (testing to make sure I'd get the same result).
+
+I chose a subset of variables with which to work based on my exploratory data analysis. The correlation plot was very informative regarding which variables would inform the model. My response variable will be ```critics_score```. My explanatory variable set will be:
+
+* ```imdb_rating```
+
+* ```imdb_num_votes```
+
+* ```audience_score```
+
+* ```audience_rating```
+
+* ```won_award```
+
+### Methods
+
+#### **Forward selection using adjusted R^2^**
+
+#### Step 1
+
+```{r}
+#step 1
+summary(lm(movies$critics_score ~ movies$imdb_rating))$adj.r.squared # 0.5846403
+summary(lm(movies$critics_score ~ movies$imdb_num_votes))$adj.r.squared # 0.04231254
+#summary(lm(movies$critics_score ~ movies$critics_rating))$adj.r.squared # 0.7745503
+summary(lm(movies$critics_score ~ movies$audience_rating))$adj.r.squared # 0.3431939
+summary(lm(movies$critics_score ~ movies$audience_score))$adj.r.squared # 0.4952284
+```
+
+#### Step 2
+
+```{r}
+#step 2
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$imdb_num_votes))$adj.r.squared # 0.5861897
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_rating))$adj.r.squared # 0.5898401
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score))$adj.r.squared # 0.5912307
+```
+
+#### Step 3
+
+```{r}
+#step 3
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score + movies$imdb_num_votes))$adj.r.squared # 0.5928506
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score + movies$audience_rating))$adj.r.squared # 0.5910414
+```
+
+#### Step 4
+
+```{r}
+#step 4
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score + movies$imdb_num_votes + movies$audience_rating))$adj.r.squared
+```
+
+#### Step 5
+
+```{r}
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score + movies$imdb_num_votes + movies$audience_rating + movies$won_award))$adj.r.squared #reduces
+```
+
+We see in step 5 that the addition of the variable ```won_award``` reduces the adjusted R^2^ score, so we will leave it out of the model.
+
+
+#### **Forward selection using p-values**
+
+#### Step 1
+
+```{r}
+# step 1
+summary(lm(movies$critics_score ~ movies$imdb_rating))[[4]] # 3.743006e-126
+summary(lm(movies$critics_score ~ movies$imdb_num_votes))[[4]] # 7.105787e-08
+summary(lm(movies$critics_score ~ movies$audience_rating))[[4]] # 1.850804e-61
+summary(lm(movies$critics_score ~ movies$audience_score))[[4]] # 1.214966e-98
+summary(lm(movies$critics_score ~ movies$won_award))[[4]] # 5.681539e-02
+```
+
+#### Step 2
+
+```{r}
+# step 2
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$imdb_num_votes))[[4]] # 6.447851e-02
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_rating))[[4]] # 2.479742e-03
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score))[[4]] 
+```
+
+#### Step 3
+
+```{r}
+# step 3
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score + movies$audience_rating))[[4]]
+```
+
+#### Step 4
+
+```{r}
+# step 4
+#final model
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score))[[4]] 
+```
+
+#### **Backward selection using p-values**
+
+#### Step 1
+
+```{r}
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score + movies$audience_rating + movies$won_award + movies$imdb_num_votes))[[4]]
+```
+
+#### Step 2
+
+```{r}
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score + movies$audience_rating + movies$imdb_num_votes))[[4]]
+```
+
+#### Step 3
+
+```{r}
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score + movies$imdb_num_votes))[[4]]
+```
+
+#### Step 4
+
+```{r}
+summary(lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score))[[4]]
+```
+
+
+
+#### **Selecting final models**
+
+```{r}
+cs_ar2_final <- lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score + movies$imdb_num_votes + movies$audience_rating) 
+cs_pv_final <- lm(movies$critics_score ~ movies$imdb_rating + movies$audience_score)
+```
+
+We see a difference in these two models, namely that the adjusted R^2^ model includes the variables ```audience_rating``` and ```imdb_num_votes```.
+
+If we plot the residuals of the adjusted R^2^ model, this is what we get:
+
+```{r}
+ggplot(movies, aes(x=cs_ar2_final$residuals)) + geom_histogram()
+```
+
+The result is a nearly normal distribution with a mean of approximately 0. This satisfies the necessary criteria for being a legitimate linear model. 
+
+Let's take a look at a histogram plot of the p-value model's residuals:
+
+```{r}
+ggplot(movies, aes(x=cs_pv_final$residuals)) + geom_histogram()
+```
+
+The result is a nearly normal distribution, which is what we want. I don't want to lose some of the accuracy the variables in the adjusted R^2^ model could give me, though. For that reason, I am selecting the adjusted R^2^ model, as it contains all the variables in the p-value model as well as additional variables that will provide us better accuracy.
+
+
+
+#### **Plotting residuals against individual variables**
+
+```{r}
+plot(cs_ar2_final$residuals ~ movies$imdb_rating, col="red")
+abline(h=0, lty=2)
+plot(cs_ar2_final$residuals ~ movies$audience_score, col="red")
+abline(h=0, lty=2)
+plot(cs_ar2_final$residuals ~ movies$imdb_num_votes, col="red")
+abline(h=0, lty=2)
+```
+
+We see random scatter for all plots, which meets the criteria for a linear model.
+
+Let's rename ```cs_ar2_final```, giving it the name ```cs_final``` to denote its finality. We'll then plot the residuals in a scatterplot and histogram and plot the normal probability plot of residuals.
+
+#### **Plotting the final model**
+
+```{r}
+cs_final <- lm(critics_score ~ imdb_rating + audience_score + audience_rating + imdb_num_votes, data=movies)
+plot(cs_final$residuals, col="red")
+abline(h=0, lty=2)
+ggplot(movies, aes(x=cs_final$residuals)) + geom_histogram()
+qqnorm(cs_final$residuals, col="red")
+qqline(cs_final$residuals)
+```
+
+We definitely see a random scatter around 0 in this residuals plot.
+
+#### **Checking for constant variability of the final model**
+
+Now let's plot ```cs_final$residuals ~ cs_final$fitted``` and ```abs(cs_final$residuals) ~ cs_final$fitted``` to check for constant variability.
+
+```{r}
+plot(cs_final$residuals ~ cs_final$fitted, col="red")
+abline(h=0, lty=2)
+plot(abs(cs_final$residuals) ~ cs_final$fitted, col="red")
+```
+
+We do not see a fan shape in these plots, so the constant variability conditions appears to be met.
+
+* * *
+
+## Part 5: Prediction
+
+The movie whose ```critics_score``` I will predict is **_Star Trek Beyond_**.
+
+It was released on July 22, 2016. All information is from imdb.com and rottentomatoes.com.
+
+  * ```imdb_num_votes``` = 122567
+  
+  * ```imdb_rating``` = 7.2
+  
+  * ```audience_score``` = 81
+  
+  * ```audience_rating``` = Upright
+
+For reference, ```critics_score``` = 84
+
+First, I'll create the data.frame ```newmovie``` to include the data about _Star Trek Beyond_
+
+```{r}
+newmovie <- data.frame(imdb_rating = 7.2, imdb_num_votes = 122567, audience_score = 81, audience_rating = "Upright")
+```
+
+Now, I will run the predict function.
+
+```{r}
+predict(cs_final, newmovie, interval = "prediction", level = 0.95)
+```
+
+We predict that this movie would receive a critics' score of 73.09.
+
+We can also see that based on this model, with 95% confidence, a movie (in this case _Star Trek Beyond_) with an ```imdb_rating``` of 7.2, an ```audience_score``` of 81, an ```audience_rating``` of "Upright", and and ```imdb_num_votes``` of 122,567 is expected to receive a critics' score between 43.18 and 100 (score can not exceed 100). 
+
+* * *
+
+## Part 6: Conclusion
+
+Using our model, we predicted a critics' score that reached 87% accuracy. The true score did in fact fall within the 95% confidence interval. The accuracy rating is decent, and could likely be improved.
+
+To improve these results using this model, we would need more observations. To improve the model in general, we would need a greater number of useful variables.
+
+I think many useful questions can be addressed using a similar model. One would be to forecast how much money a movie would make.

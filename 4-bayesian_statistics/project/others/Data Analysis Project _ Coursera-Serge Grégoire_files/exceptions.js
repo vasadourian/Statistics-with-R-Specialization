@@ -1,0 +1,1 @@
+define("bundles/phoenix/lib/exceptions",["require","exports","module","underscore"],function(require,exports,module){"use strict";var _=require("underscore");module.exports={NotFound:function NotFound(){},Redirect:function Redirect(e,t){this.to=e,this.navigateOptions=_.defaults(t||{},{replace:!0,trigger:!0})}}});

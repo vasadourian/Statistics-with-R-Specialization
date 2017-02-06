@@ -1,0 +1,235 @@
+---
+title: "Exploring the BRFSS data"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+library(magrittr)
+library(statsr)
+library(gridExtra)
+```
+
+### Load data
+
+```{r load-data}
+load("brfss2013.RData")
+```
+
+
+
+* * *
+
+## Part 1: Data
+
+The data was collected by the Center for Disease Control and Prevention (CDC) during 2013-2014. More than 506,000 surveys were collected. The data is collected over the phone, using landline and cell phone surveys. The interviewer will collect data from a randomly selected adult in a household. 97.5% of households had telephone service in the US in 2012, so this method was effective at garnering a random model that could represent the population at large. The data collected was to be uniform, state-specific, and pertitent to known risk factors linked to chronic diseases, injuries, and infectious diseases that affect the adult population.
+
+Causality cannot be inferred. Rather, only correlations can be made.
+
+* * *
+
+## Part 2: Research questions
+
+**Research quesion 1:**
+Is there a correlation between education level completed, income level, and home ownership? Also, is there a correlation between the factors in the previous question and frequency in which a person indulges in vices such as drinking or smoking? This question is looking at how education level and income level may be related to lifestyle habits.
+
+This question interests me because I want to visualize the correlation between economic classes and the indulgence of vices. I don't have any clear predictions about that relationship.
+
+**Research quesion 2:**
+Is there a relationship between where you live and your body-mass index (BMI)? Particularly, how does the region you live in or the area within a metropolitan statistical area you live in relate to your body-mass index?
+
+It would be interesting to see how different parts of the country differ in their physical health. 
+
+**Research quesion 3:**
+Do drinking and smoking affect physical health?
+
+Most people would have a pretty distinct intuition about the results of this analysis. I want to see, though, how starkly the health of binge drinkers and smokers contrasts that of people who do not drink and smoke. How much more of their lives are they spending in poor health?
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+**Research quesion 1:**
+
+For the first part of the first question, we're going to look at a bar graph that will show the relationship between education level completed and the associated income levels attained.
+
+First, I'll create two separate data frames that will filter out all observations of owned homes and rented homes, respectively, from the dimension "renthom1".
+
+```{r}
+own_home <- brfss2013 %>% filter(renthom1 == "Own")
+rent_home <- brfss2013 %>% filter(renthom1 == "Rent")
+```
+
+Now, to create the graphs. This first one will show the relationship between education and income.
+
+```{r}
+ggplot(data=subset(brfss2013, !is.na(X_educag)), aes(x=X_educag, fill=X_incomg)) + geom_bar() + scale_x_discrete(labels = c("Did not graduate high school"="Not HS Grad", "Graduated high school" = "HS grad", "Attended college or technical school"="Some col", "Graduated from college or technical school"="Col grad")) + xlab("Education Level") + labs(title = "Education level completed and associated income levels") + ylab("Count")
+```
+
+We can see the category that enjoys the largest percenters of $50k+ earners are the college graduates. That matches our intuition. 
+
+This graph will show the relationship between income and home ownership-- whether someone buys or rents.
+
+```{r}
+ggplot(data=subset(brfss2013, !is.na(X_incomg)), aes(x=X_incomg, fill=renthom1), message=FALSE) + geom_bar() + xlab("Income") + scale_x_discrete(labels = c("Less than $15,000" = "15k", "$15,000 to less than $25,000" = "$15k<x<$25k", "$25,000 to less than $35,000" = "$25k<x<$35k", "$35,000 to less than $50,000" = "$35k<x<$50k","$50,000 or more" = ">$50k"))  + labs(title= "Income level and home ownership" )
+```
+
+This graphs demonstrates that the ratio of owners to buyers increases to favor owners as income increases. The vast majority of those who earn over $50k/yr are home owners.
+
+Now that we've demonstrated the relationships to some degree between income, education, and home ownership, let's take a look at how often home owners and home renters smoke. These proportions will be divided by education level completed.
+
+
+```{r}
+ggplot(data=subset(own_home, !is.na(educa)), aes(x=educa, fill = smokday2),message=FALSE) + geom_bar() + scale_x_discrete(labels = c("Never attended school or only kindergarten" = "None", "Grades 1 through 8 (Elementary)" = "Gr. 1-8", "Grades 9 though 11 (Some high school)" = "Some HS", "Grade 12 or GED (High school graduate)" = "HS Grad", "College 1 year to 3 years (Some college or technical school)" = "Some Col.", "College 4 years or more (College graduate)" = "Col. Grad")) + xlab("Education Level") + labs(title = "Smoking levels per education level for home owners") + ylab("Count")
+
+ggplot(data=subset(rent_home, !is.na(educa)), aes(x=educa, fill = smokday2),message=FALSE) + geom_bar() + scale_x_discrete(labels = c("Never attended school or only kindergarten" = "None", "Grades 1 through 8 (Elementary)" = "Gr. 1-8", "Grades 9 though 11 (Some high school)" = "Some HS", "Grade 12 or GED (High school graduate)" = "HS Grad", "College 1 year to 3 years (Some college or technical school)" = "Some Col.", "College 4 years or more (College graduate)" = "Col. Grad")) + xlab("Education Level") + labs(title = "Smoking levels per education level for home renters") + ylab("Count")
+```
+
+We can see a very different distribution between owners and renters regarding education level. We see that home owners have a left-skewed distribution, favoring having completed college. The category with the largest number of observations amongst renters is "high school graduate".
+
+We can also see that home owners smoke (some days or every day) at a much higher proportion across the board.
+
+
+```{r}
+require(gridExtra)
+
+plot_a <- ggplot(data = own_home, aes(x = genhlth), message=FALSE) + geom_bar() + labs(title= "General health among home owners") + scale_x_discrete(labels = c("Excellent" = "Exclnt", "Very good" = "V. good", "Good" = "Good", "Fair" = "Fair", "Poor" = "Poor")) + xlab("General Health")
+plot_b <- ggplot(data = rent_home, aes(x = genhlth), message=FALSE) + geom_bar() + labs(title= "General health among home renters") + scale_x_discrete(labels = c("Excellent" = "Exclnt", "Very good" = "V. good", "Good" = "Good", "Fair" = "Fair", "Poor" = "Poor")) + xlab("General Health")
+suppressWarnings(suppressMessages(print(grid.arrange(plot_a,plot_b, ncol=2))))
+
+```
+
+I wanted to see how these lifestyles could affect health. I used the categorical variable genhlth to see what classes of physical health conditions owners and renters fall into.
+
+We can see that there is a much higher proportion of owners who enjoy excellent and very good health. The distributions seem to be flipped.
+
+**Research quesion 2:**
+
+I want to create a variable called "region" to be able to do some analyses over the Northeast, Midwest, South, West, and Territories (note: Puerto Rico and Guam) regions of the USA. This will be useful as we will be able to make generalizations over broader areas. These areas are conventionally defined (https://en.wikipedia.org/wiki/List_of_regions_of_the_United_States#Interstate_regions) and share cultural and historical ties.
+
+```{r}
+attach(brfss2013)
+
+brfss2013$region[X_state == "Delaware" | X_state == "Florida" | X_state == "Georgia" | X_state == "Maryland" | X_state ==  "North Carolina" | X_state ==  " South Carolina" | X_state == "Virgina" | X_state == "Washington DC" | X_state == "West Virginia"|X_state == "Alabama"|X_state == "Kentucky"|X_state == "Mississippi"|X_state == " Tennessee"|X_state == "Arkansas"|X_state == "Lousiana"|X_state == "Oklahoma"|X_state == "Texas"] <- "South"
+
+brfss2013$region[X_state == "Connecticut" | X_state == "Maine" | X_state == "New Hampshire" | X_state == "Rhode Island" | X_state == "Vermont" | X_state == "New Jersey" | X_state == "New York" | X_state == "Pennsylvania"] <- "Northeast"
+
+brfss2013$region[X_state == "Illinois" | X_state == "Indiana" | X_state == "Michigan" | X_state == "Ohio" | X_state == "Wisconsin" | X_state == "Iowa" | X_state == "Kansas" | X_state == "Minnesota" | X_state == "Missouri" | X_state == "Nebraska" | X_state == "North Dakota" | X_state == "South Dakota"] <- "Midwest"
+
+brfss2013$region[X_state == "Arizona" | X_state == "Colorado" | X_state == "Idaho" | X_state == "Montana" | X_state == "Nevada" | X_state == "New Mexico" | X_state == "Utah" | X_state == "Wyoming" | X_state == "Alaska" | X_state == "California" | X_state == "Hawaii" | X_state == "Oregon" | X_state == "Washington"] <- "West"
+
+brfss2013$region[X_state == "Guam" | X_state == "Puerto Rico"] <- "Territories"
+
+detach(brfss2013)
+```
+
+
+Let's take a look at the mean and standard deviation of BMI, by region. Note: there are an implied two decimal places in the numbers.
+
+```{r}
+brfss2013 %>% 
+  group_by(region) %>%
+  summarise(mean_bmi = mean(X_bmi5, na.rm=TRUE), sd_bmi = sd(X_bmi5, na.rm=TRUE)) %>%
+  arrange(desc(mean_bmi))
+
+```
+Let's compare that those results to the nationwide BMI numbers.
+```{r}
+brfss2013 %>% summarise(national_mean_bmi = mean(X_bmi5, na.rm=TRUE), national_sd_bmi = sd(X_bmi5, na.rm=TRUE))
+```
+Normal weight is defined as falling in the BMI range of 18.5 to 24.9. The 'overweight' category falls in the range 25 to 29.9. Obesity is defined as a BMI of 30 or more. We see then that every region-- and the nation at large-- averages in the overweight range. The South tops the list as the most overweight region, followed by the Midwest. All other regions fall below the national average.
+We see a significant range here. There may be many cultural factors that play a role in the difference in average BMI, such as cuisine and amount of activity.
+
+Let's see how this looks graphed.
+
+```{r}
+ggplot(data=subset(brfss2013,!is.na(region)), aes(x=region, y=X_bmi5)) + geom_boxplot() + scale_x_discrete(labels = c("Midwest"="MW", "South"="S","West"= "W", "Northeast"="NE", "Territories"="T")) + xlab("Regions") + labs(title = "BMI by region") + ylab("Count")
+```
+
+Those results may or may not have been surprising to many. But I believe many people wouldn't have a solid intuition about the next question. Is there a relationship between where one lives in relation to a metropolitan statistical area (MSA) and one's BMI?
+
+First, let's take a look at what an MSA could be.
+```{r}
+levels(brfss2013$mscode)
+```
+Now let's take a look at the mean and standard deviation of BMI by region of MSA, in descending order.
+```{r}
+options(tibble.width=Inf)
+brfss2013 %>% 
+  group_by(mscode) %>% 
+  summarise(mean_bmi = mean(X_bmi5, na.rm=TRUE), sd_bmi = sd(X_bmi5, na.rm=TRUE)) %>% 
+  arrange(desc(mean_bmi))
+```
+
+Let's see the data graphed.
+
+```{r}
+ggplot(data=subset(brfss2013,!is.na(mscode)), aes(x=mscode, y=X_bmi5)) + geom_boxplot() + scale_x_discrete(labels = c("In the center city of an MSA"="Center", "Outside the center city of an MSA but inside the county containing the center city"="In city, not center","Inside a suburban county of the MSA"="Suburb", "In an MSA that has no center city"="MSA has no center","Not in an MSA"="Rural" )) + xlab("MSA region") + labs(title = "BMI by MSA reference") + ylab("Count")
+```
+
+
+We see here that areas with the value "Not in an MSA"-- let's call these rural areas-- have a substaintially higher average BMI. The suburban population comes in second. Substantially lower and virtually tied are values 3 and 4, inner city populations.
+
+Let's now create a data frame for the rural population, and see how the regions of the USA rank regarding BMI.
+
+```{r}
+rural_df <- brfss2013 %>% filter(mscode == "Not in an MSA")
+
+options(tibble.width=Inf)
+rural_df %>% 
+  group_by(region) %>% 
+  summarise(mean_bmi = mean(X_bmi5, na.rm=TRUE), sd_bmi = sd(X_bmi5, na.rm=TRUE)) %>% 
+  arrange(desc(mean_bmi))
+```
+
+We can see from the results that in terms of rural areas, those in the South have the highest average BMI. Note that the territories (Puerto Rico and Guam) did not register any observations as rural ("Not in an MSA").
+
+
+**Research quesion 3:**
+
+For the third research question, I'm going to make two data frames to parse out individuals who smoke and drink a certain amount, and those who do not do either.
+
+The criteria I am going to use to define a drinker is someone who binge drinks (over 5 drinks at a time for men, 4 for women) at least 8 occasions during a month. I went with 8 as the minimum because I wanted to capture the set of people who drink heavily at least on weekends (4 weekends a month, bringing the total to 8 days). The variable drnk3ge5 tells of the number of binging occassions in a 30-day period someone takes part in.
+
+For smoking, the criteria I went with was someone who smokes at least one cigarette everyday.
+
+I combined these two factors to created a data frame. I made another data frame that captures the set of people who never binge drink and do not smoke at all. I figured that this would draw a pretty clear dichotomy.
+
+
+```{r}
+smoker_drinker <- brfss2013 %>% filter(drnk3ge5>8, smokday2 == "Every day")
+abs_not_smoker_drinker <- brfss2013 %>% filter(drnk3ge5==0, smokday2 == "Not at all")
+```
+
+
+
+Now I want to plot the number of days out of 30 that individuals from each data frame experience poor health. For this, I used the variable poorhlth.
+
+```{r }
+require(gridExtra)
+plot1 <- ggplot(data = smoker_drinker, aes(x = poorhlth),message=FALSE) + geom_histogram() + xlab("Number of days out of 30 in poor health")+ labs(title="Days in poor health of those who smoke and drink")
+plot2 <- ggplot(data = abs_not_smoker_drinker, aes(x = poorhlth),message=FALSE) + geom_histogram() + xlab("Number of days out of 30 in poor health") + labs(title="Days in poor health of those who neither smoke nor drink")
+suppressWarnings(suppressMessages(print(grid.arrange(plot1,plot2, ncol=1, nrow=2))))
+```
+
+It's not blaringly clear from the graphs above, but there is a significant difference in the average number of days in poor health between those I've defined as drinkers and smokers and those who abstain from both vices. I've included the means and standard deviations in regard to number of days in poor health per 30 days, below.
+
+
+```{r}
+
+smoker_drinker %>%
+  summarise(poor_health_days_mean = mean(poorhlth, na.rm=TRUE), poor_health_days_sd = 
+              sd(poorhlth,na.rm=TRUE))
+abs_not_smoker_drinker %>% summarise(poor_health_days = mean(poorhlth, na.rm=TRUE), poor_health_days_sd = sd(poorhlth,na.rm=TRUE))
+```
+
+There is a significant difference in average number of days in poor health out of 30 days. With a difference of over 2.7 days, those who drink and smoke regularly would on average be in poor health over 32 days out of the year more than their counterparts who abstain from drinking and smoking. That is a month more of their lives per year in poor health. That would make a big difference in quality of life.
