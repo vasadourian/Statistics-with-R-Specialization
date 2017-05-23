@@ -1,0 +1,574 @@
+---
+title: "Peer Assessment II"
+output:
+  html_document: 
+    pandoc_args: [
+      "--number-sections",
+    ]
+---
+
+# Background
+
+As a statistical consultant working for a real estate investment firm, your task is to develop a model to predict the selling price of a given home in Ames, Iowa. Your employer hopes to use this information to help assess whether the asking price of a house is higher or lower than the true value of the house. If the home is undervalued, it may be a good investment for the firm.
+
+# Training Data and relevant packages
+
+In order to better assess the quality of the model you will produce, the data have been randomly divided into three separate pieces: a training data set, a testing data set, and a validation data set. For now we will load the training data set, the others will be loaded and used later.
+
+```{r load, message = FALSE}
+load("ames_train.Rdata")
+```
+
+Use the code block below to load any necessary packages
+
+```{r packages, message = FALSE}
+library(statsr)
+library(dplyr)
+library(BAS)
+library(ggplot2)
+library(GGally)
+library(magrittr)
+library(MASS)
+```
+
+## Part 1 - Exploratory Data Analysis (EDA)
+
+When you first get your data, it's very tempting to immediately begin fitting models and assessing how they perform.  However, before you begin modeling, it's absolutely essential to explore the structure of the data and the relationships between the variables in the data set.
+
+Do a detailed EDA of the ames_train data set, to learn about the structure of the data and the relationships between the variables in the data set (refer to Introduction to Probability and Data, Week 2, for a reminder about EDA if needed). Your EDA should involve creating and reviewing many plots/graphs and considering the patterns and relationships you see. 
+
+After you have explored completely, submit the three graphs/plots that you found most informative during your EDA process, and briefly explain what you learned from each (why you found each informative).
+
+* * *
+# filtering the dataframe for only homes sold under normal conditions
+```{r}
+ames_train <- ames_train %>%
+  filter(Sale.Condition == "Normal")
+```
+
+
+### Visual Group 1
+
+```{r creategraphs}
+
+
+ordering_med <- order(as.numeric(by(ames_train$price, ames_train$Neighborhood, median)), decreasing = TRUE)
+ames_train$Neighborhood <- ordered(ames_train$Neighborhood, levels=levels(ames_train$Neighborhood)[ordering_med]) 
+boxplot(price ~ Neighborhood, data = ames_train, las = 2, ylab = "Price", main = "House price by neighborhood in Ames, Iowa")
+```
+
+This box plot shows us the mean, interquartile range, and spread of prices of homes by neighborhood. Its ordering by price lends to its informative impact. 
+
+### Visual Group 2 (two visuals)
+
+#### Scatterplot of average home price by year
+
+
+```{r}
+avg_price_year <- sapply(split(ames_train$price, ames_train$Year.Built), mean)
+plot(avg_price_year, xaxt="n", main="Average Price of Homes in Ames by Year")
+axis(1, at=seq(1,102,4), labels=sort(unique(ames_train$Year.Built))[seq(1,102,4)])
+```
+
+This plot gives us the average home price per year. One caveat: the x axis is not missing some values. Though this does violate a maxim of graph design, this graph is still informative.
+
+#### Scatterplot of home price by year
+
+```{r}
+ggplot(ames_train, aes(x=Year.Built, y=price)) +
+  labs(title="Prices of Homes in Ames by Year") +
+  geom_point()
+```
+
+This plot is similar to the one above but gives us more information on the number of homes built by year.
+
+### Visual Group 3 (two visuals)
+
+```{r}
+suppressWarnings(suppressMessages(ggpairs(ames_train, columns = c(3,2,18,20,21,22))))
+
+suppressWarnings(suppressMessages(ggpairs(ames_train, columns=c(3,31,53,56,81))))
+```
+
+These visuals above give us a matrix of graphs to inspect how multiple variables interact. These variables were chosen for their affect on the variable ```price``` evidenced through EDA. I broke up the ```ggpairs``` graph into two graphs to make it easier to interpret.
+
+```{r echo=FALSE, results='hide',message=FALSE}
+#which( colnames(ames_train)=="price" )
+#which( colnames(ames_train)=="area" )
+#which( colnames(ames_train)=="Year.Built" )
+#which( colnames(ames_train)=="Overall.Cond" )
+#which( colnames(ames_train)=="Bldg.Type" )
+#which( colnames(ames_train)=="Overall.Qual" )
+#which( colnames(ames_train)=="Bedroom.AbvGr" )
+#which( colnames(ames_train)=="Exter.Cond" )
+#which( colnames(ames_train)=="TotRms.AbvGrd" )
+#which( colnames(ames_train)=="Sale.Condition" )
+```
+
+* * *
+
+## Part 2 - Development and assessment of an initial model, following a semi-guided process of analysis
+
+### Section 2.1 An Initial Model
+In building a model, it is often useful to start by creating a simple, intuitive initial model based on the results of the exploratory data analysis. (Note: The goal at this stage is **not** to identify the "best" possible model but rather to choose a reasonable and understandable starting point. Later you will expand and revise this model to create your final model.
+
+Based on your EDA, select *at most* 10 predictor variables from “ames_train” and create a linear model for `price` (or a transformed version of price) using those variables. Provide the *R code* and the *summary output table* for your model, a *brief justification* for the variables you have chosen, and a *brief discussion* of the model results in context (focused on the variables that appear to be important predictors and how they relate to sales price).
+
+* * *
+
+```{r fit_model}
+initial_model_adjr2 <- lm(log(price) ~ Overall.Qual + Neighborhood + X1st.Flr.SF +
+                            X2nd.Flr.SF + Overall.Cond + Year.Built + log(Lot.Area) +
+                            Bsmt.Full.Bath + Condition.1 + Bldg.Type, data=ames_train)
+
+summary(initial_model_adjr2)
+```
+
+
+* * *
+
+
+### Section 2.2 Model Selection
+
+Now either using `BAS` another stepwise selection procedure choose the "best" model you can, using your initial model as your starting point. Try at least two different model selection methods and compare their results. Do they both arrive at the same model or do they disagree? What do you think this means?
+
+* * *
+
+First we'll use Bayesian Model Averaging to find which variables ought to be in the final model. This method uses Bayesian Adaptive Sampling without replacement from posterior distributions.
+
+```{r model_select}
+initial_model.bas <- bas.lm(log(price) ~ Overall.Qual + Neighborhood + X1st.Flr.SF + 
+                              X2nd.Flr.SF + Overall.Cond + Year.Built + log(Lot.Area) + 
+                              Bsmt.Full.Bath + Condition.1 + Bldg.Type,
+                            prior="BIC",
+                            modelprior=uniform(),
+                            data=ames_train)
+
+initial_model.bas
+```
+
+As we can see, at least one level of each of the variables have a 100% chance of being included in the final model. As some of the variables involved in this analysis are multi-factor categorical, certain levels of a variables may not be found to be as significant as others.
+
+
+##### Final Model using adjusted R^2^
+
+The model below was built through forward selection using the adjusted R^2^ score. This process involves checking the adjusted R^2^ score at each step and including the variable with the highest score. At the first step, one checks the score for each variable, finding the highest. At the second step, one would find the highest score derived from the combination of the aforementioned variable with each other remaining variable, respectively. The process continues in that fashion. 
+
+```{r}
+initial_model_adjr2 <- lm(log(price) ~ Overall.Qual + Neighborhood + X1st.Flr.SF + X2nd.Flr.SF + Overall.Cond + Year.Built + log(Lot.Area) + Bsmt.Full.Bath + Condition.1 + Bldg.Type, data=ames_train)
+
+summary(initial_model_adjr2)
+```
+
+1.  **Variables used:**
+  + ```Overall.Qual```
+  + ```Neighborhood```
+  + ```X1st.Flr.SF```
+  + ```X2nd.Flr.SF```
+  + ```Overall.Cond```
+  + ```Year.Built```
+  + ```log(Lot.Area)```
+  + ```Bsmt.Full.Bath```
+  + ```Condition.1```
+  + ```Bldg.Type```
+
+
+#### Model selection using AIC score
+
+Here we will use another method of model-building, using 
+the Akaike information criterion (AIC) as the metric of interest. Per wikipedia, the AIC "offers a relative estimate of the information lost when a given model is used to represent the process that generates the data. In doing so, it deals with the trade-off between the goodness of fit of the model and the complexity of the model."
+
+The goal of the stepwise AIC method is to minimize the AIC score. At each step, the variable with the lowest AIC score is removed, and if the resulting AIC score of the model at large is lower than it was at the previous step, than that model is considered superior and the process continues.
+
+```{r}
+stepAIC(initial_model_adjr2, direction="backward", trace=TRUE)
+```
+
+We see from the above result that the original model had the lowest AIC score of any combination of its constituent variables. By this metric, this is the optimal model.
+
+
+1.  **Variables used:**
+  + ```Overall.Qual```
+  + ```Neighborhood```
+  + ```X1st.Flr.SF```
+  + ```X2nd.Flr.SF```
+  + ```Overall.Cond```
+  + ```Year.Built```
+  + ```log(Lot.Area)```
+  + ```Bsmt.Full.Bath```
+  + ```Condition.1```
+  + ```Bldg.Type```
+
+
+The above three methods (forward selection using adjusted R^2^, stepwise AIC, and Bayesian Model Averaging) produce the same results. All 10 variables from the original model are retained.
+
+* * *
+
+### Section 2.3 Initial Model Residuals
+One way to assess the performance of a model is to examine the model's residuals. In the space below, create a residual plot for your preferred model from above and use it to assess whether your model appears to fit the data well. Comment on any interesting structure in the residual plot (trend, outliers, etc.) and briefly discuss potential implications it may have for your model and inference / prediction you might produce.
+
+* * *
+
+```{r model_resid}
+ggplot(ames_train, aes(x=initial_model_adjr2$residuals)) + geom_histogram() + labs(title="Initial Model Residuals") + xlab("residuals")
+```
+
+We see what resembles a normal distribution in the spread of the residuals, which fulfills a stipulation for model legitimacy. 
+
+```{r}
+plot(initial_model_adjr2$residuals, col="red", ylab="residuals", main="Residuals Scatterplot") + 
+abline(h=0, lty=2)
+```
+
+We see a random scatter along 0 on the y-axis, which fulfills a condition for model legitimacy.
+
+```{r}
+qqnorm(initial_model_adjr2$residuals, col="red")
+qqline(initial_model_adjr2$residuals)
+```
+
+We see a mostly-linear relationship between theoretical and sample quantiles, which is what we would look for.
+
+* * *
+
+### Section 2.4 Initial Model RMSE
+
+You can calculate it directly based on the model output. Be specific about the units of your RMSE (depending on whether you transformed your response variable). The value you report will be more meaningful if it is in the original units (dollars).
+
+* * *
+
+
+
+```{r model_rmse}
+initial_residuals <- residuals(initial_model_adjr2)
+initial_rmse <- sd(initial_residuals)
+
+initial_rmse
+```
+
+* * *
+
+### Section 2.5 Overfitting 
+
+The process of building a model generally involves starting with an initial model (as you have done above), identifying its shortcomings, and adapting the model accordingly. This process may be repeated several times until the model fits the data reasonably well. However, the model may do well on training data but perform poorly out-of-sample (meaning, on a dataset other than the original training data) because the model is overly-tuned to specifically fit the training data. This is called “overfitting.” To determine whether overfitting is occurring on a model, compare the performance of a model on both in-sample and out-of-sample data sets. To look at performance of your initial model on out-of-sample data, you will use the data set `ames_test`.
+
+```{r loadtest, message = FALSE}
+load("ames_test.Rdata")
+```
+
+Use your model from above to generate predictions for the housing prices in the test data set.  Are the predictions significantly more accurate (compared to the actual sales prices) for the training data than the test data?  Why or why not? Briefly explain how you determined that (what steps or processes did you use)?
+
+* * *
+
+Below is the code to find the RMSE of the model on the test data.
+
+```{r initmodel_test}
+initial_testmodel_adjr2 <- lm(log(price) ~ Overall.Qual + Neighborhood + X1st.Flr.SF + X2nd.Flr.SF + Overall.Cond + Year.Built + log(Lot.Area) + Bsmt.Full.Bath + Condition.1 + Bldg.Type, data=ames_test)
+```
+
+
+```{r}
+initial_test_residuals <- residuals(initial_testmodel_adjr2)
+initial_test_rmse <- sd(initial_test_residuals)
+
+initial_test_rmse
+```
+
+We see that the RMSE is greater on the test data, as we would have guessed. The difference is not too large (0.09932028 vs. 0.1035496 for the test data). We can therefore confidently say that the model does not suffer from overfitting.
+
+We want to see if Bayesian Model Averaging produces the same model using the ```ames_test``` dataset. Let's try that now.
+
+```{r}
+initial_model_test.bas <- bas.lm(log(price) ~ Overall.Qual + Neighborhood + X1st.Flr.SF + 
+                              X2nd.Flr.SF + Overall.Cond + Year.Built + log(Lot.Area) + 
+                              Bsmt.Full.Bath + Condition.1 + Bldg.Type,
+                            prior="BIC",
+                            modelprior=uniform(),
+                            data=ames_test)
+
+initial_model_test.bas
+```
+
+The results of running our model through Bayesian Model Averaging give us the same model.
+
+* * *
+
+**Note to the learner:** If in real-life practice this out-of-sample analysis shows evidence that the training data fits your model a lot better than the test data, it is probably a good idea to go back and revise the model (usually by simplifying the model) to reduce this overfitting. For simplicity, we do not ask you to do this on the assignment, however.
+
+## Part 3 Development of a Final Model
+
+Now that you have developed an initial model to use as a baseline, create a final model with *at most* 20 variables to predict housing prices in Ames, IA, selecting from the full array of variables in the dataset and using any of the tools that we introduced in this specialization.  
+
+Carefully document the process that you used to come up with your final model, so that you can answer the questions below.
+
+### Section 3.1 Final Model
+
+
+
+Provide the summary table for your model.
+
+* * *
+
+
+```{r model_playground}
+final_model <- lm(log(price) ~ Overall.Qual + Neighborhood + X1st.Flr.SF + 
+                    X2nd.Flr.SF + Overall.Cond + Year.Built + log(Lot.Area) + 
+                    Bsmt.Full.Bath + Condition.1 + Bldg.Type + Garage.Area + 
+                    Functional + Kitchen.Qual, data=ames_train)
+
+summary(final_model)
+```
+
+* * *
+
+### Section 3.2 Transformation
+
+Did you decide to transform any variables?  Why or why not? Explain in a few sentences.
+
+I transformed the variables ```price``` and ```Lot.Area```.
+
+The distributions of these variables pre-transform were skewed. By distributions of their log-transformations were much closer to normal, which is what we want in a variable in order to include it in the model.
+
+```{r}
+ggplot(ames_train, aes(x=price)) + geom_histogram() + labs(title="Histogram of Prices")
+ggplot(ames_train, aes(x=log(price))) + geom_histogram() + labs(title="Histogram of Prices, Log-Transformed")
+```
+
+```{r}
+ggplot(ames_train, aes(x=Lot.Area)) + geom_histogram() + labs(title="Histogram of Lot Areas")
+ggplot(ames_train, aes(x=log(Lot.Area))) + geom_histogram() + labs(title="Histogram of Lot Areas, Log-Transformed")
+```
+
+We can see that the distributions of the log-transformations are much closer to a normal distribution.
+
+* * *
+
+
+```{r model_assess}
+```
+
+* * *
+
+### Section 3.3 Variable Interaction
+
+Did you decide to include any variable interactions? Why or why not? Explain in a few sentences.
+
+* * *
+
+I did not include any interactions in my model.
+
+```{r model_inter}
+```
+
+* * *
+
+### Section 3.4 Variable Selection
+
+What method did you use to select the variables you included? Why did you select the method you used? Explain in a few sentences.
+
+* * *
+
+I built my model using forward-selection with the adjusted R^2^ score as the criterion. I felt using by using this metric, I could go about building an informative model in a reliable way. With adjusted R^2^, finding the best variable to add to the model at each step is straightforward. Using the p-value in either forward or backward selections creates much more grey area; a certain level of a multi-level categorical variable may be very significant, while its other variables are less significant or even very insignificant.
+
+
+```{r model_select}
+```
+
+Through the course of my EDA I found that certain variables would not be informative to the model.
+
+For instance, I took a look at which variables had a large number of missing values.
+
+```{r}
+sort(sapply(ames_train, function(x) sum(is.na(x))), decreasing=TRUE)
+```
+
+Off the bat, we can disqualify ```Pool.QC```, ```Misc.Feature```, ```Alley```, ```Fence```, and ```Fireplace.Qu``` because of their very high proportion of missing values. These variables will not be useful in our model.
+
+The variable ```Utilities```  would also not prove insightful:
+
+```{r}
+levels(ames_train$Utilities)
+#[1] "AllPub" "NoSeWa" "NoSewr"
+length(which(ames_train$Utilities=="AllPub"))
+#[1] 1000
+```
+
+The variable has three distinct levels, but all instances are of the value ```AllPub```.
+
+```Street```, too, would not be useful to the model.
+
+```{r}
+length(which(ames_train$Street=="Pave"))
+#[1] 997
+length(which(ames_train$Street=="Grvl"))
+#[1] 3
+```
+
+As virtually all of streets of paved, this variable would not be very informative.
+
+The values of the variable ```Roof.Matl``` which are not ```NA``` overwhelmingly fall under just of its 8 levels-- ```CompShg```. This lack of variety and lopsidedness would not be useful to the model.
+
+```{r}
+summary(ames_train$Roof.Matl)
+#ClyTile CompShg Membran   Metal    Roll Tar&Grv WdShake WdShngl 
+#      0     822       0       1       0       8       1       2 
+```
+
+
+* * *
+
+### Section 3.5 Model Testing
+
+How did testing the model on out-of-sample data affect whether or how you changed your model? Explain in a few sentences.
+
+* * *
+
+I ran the Bayesian Model Averaging algorithm on the same model with testing data and I found that of the 20 variables in the model, five were deemed not worthy of inclusion. The five that did not significantly inform the model were ```Exterior.1st```, `Exter.Qual```, ```Lot.Frontage```, ```Heating.QC```, and ```Year.Remod.Add```.
+
+Below is the summary of the Bayesian Model Averaging.
+
+```{r model_testing}
+final_bas_test <- bas.lm(log(price) ~ Overall.Qual + Neighborhood + X1st.Flr.SF + 
+                     X2nd.Flr.SF + Overall.Cond + Year.Built + log(Lot.Area) + 
+                     Bsmt.Full.Bath + Condition.1 + Bldg.Type + MS.Zoning + Lot.Frontage +
+                     Garage.Area + Functional + Heating.QC + Kitchen.Qual + Heating +
+                     Year.Remod.Add + Exter.Qual + Exterior.1st,
+                             prior="BIC",
+                             modelprior=uniform(),
+                             data=ames_test)
+
+#image(final_bas_test)
+```
+
+As we can see, hardly any levels of ```Exterior.1st``` make it to any models, and the highest model any levels makes it to is rank 4. ```Year.Remod.Add```, ```Lot.Frontage```, and ```Heating.QC``` make it to no model. Two levels of ```Exter.Qual``` make it to models that rank 13+.
+
+I removed those 5 variables from the final model.
+
+* * *
+
+## Part 4 Final Model Assessment
+
+### Section 4.1 Final Model Residual
+
+For your final model, create and briefly interpret an informative plot of the residuals.
+
+* * *
+
+```{r}
+ggplot(na.omit(ames_train), aes(x=final_model$residuals)) + geom_histogram()
+```
+
+
+```{r}
+plot(final_model$residuals, col="red", main="Scatterplot of Residuals")
+abline(h=0, lty=2)
+```
+
+
+```{r}
+qqnorm(final_model$residuals, col="red")
+qqline(final_model$residuals)
+```
+
+
+* * *
+
+### Section 4.2 Final Model RMSE
+
+For your final model, calculate and briefly comment on the RMSE.
+
+* * *
+
+```{r}
+final_model_residuals <- residuals(final_model)
+final_model_rmse <- sd(final_model_residuals)
+
+final_model_rmse
+```
+
+The RMSE of the final model is somewhat lower than the original: 0.0910005 vs 0.09932028; a change of 0.00831978.
+
+* * *
+
+### Section 4.3 Final Model Evaluation
+
+What are some strengths and weaknesses of your model?
+
+* * *
+
+
+* * *
+
+### Section 4.4 Final Model Validation
+
+Testing your final model on a separate, validation data set is a great way to determine how your model will perform in real-life practice. 
+
+You will use the “ames_validation” dataset to do some additional assessment of your final model. Discuss your findings, be sure to mention:
+* What is the RMSE of your final model when applied to the validation data?  
+* How does this value compare to that of the training data and/or testing data?
+* What percentage of the 95% predictive confidence (or credible) intervals contain the true price of the house in the validation data set?  
+* From this result, does your final model properly reflect uncertainty?
+
+```{r loadvalidation, message = FALSE}
+load("ames_validation.Rdata")
+```
+
+* * *
+
+
+```{r model_validate}
+final_model_validation <- lm(log(price) ~ Overall.Qual + Neighborhood + X1st.Flr.SF + 
+                    X2nd.Flr.SF + Overall.Cond + Year.Built + log(Lot.Area) + 
+                    Bsmt.Full.Bath + Condition.1 + Bldg.Type + MS.Zoning +
+                    Garage.Area + Functional + Kitchen.Qual + Heating, data=ames_validation)
+
+final_model_validation_residuals <- residuals(final_model_validation)
+final_model_validation_rmse <- sd(final_model_validation_residuals)
+
+final_model_validation_rmse
+```
+
+The final RMSE is greater than that of the final model but less than that of the initial model. 
+
+```{r}
+predictions <- as.data.frame(predict(final_model, ames_validation, interval = "prediction", level = 0.95))
+predictions$log_validation.prices <- log(ames_validation$price)
+
+```
+
+
+```{r}
+predictions <- predictions %>%
+  mutate(in_range = ifelse(log_validation.prices > lwr & log_validation.prices < upr, "yes", "no"))
+```
+
+
+```{r}
+length(which(predictions$in_range=="yes"))/nrow(predictions)
+```
+
+```{r}
+#sum(is.na(predictions$validation.prices))
+```
+
+We see that 94.89% of our predictions fall within the interval generated using a 95% confidence level.
+
+
+
+* * *
+
+## Part 5 Conclusion
+
+Provide a brief summary of your results, and a brief discussion of what you have learned about the data and your model. 
+
+* * *
+
+The model performed well when judged by proportion of predictions falling within the 95% confidence interval, with 94.89% accuracy.
+
+While building the model, I was surprised at times at which variables were informative and which were not. For instance, I assumed going into this that central AC would be an important factor. My experience as a Houston, Texas native may have colored my assumption. The weather in this region is very hot and humid many months of the year, and AC is a neccesity. The average highs temperatures in Ames, Iowa are only 84 degrees F in July and 83 degrees F in August. Quite tolerable as contrasted against the weather in the Gulf region.
+
+Another variable that made it to the model that I found interesting was regarding a house's number of basement full baths. While this made it to the model, the number of basement half baths was quite insignificant.
+
+I am sure that I could have benefitted from taking a closer look at variable interactions, in retrospect. While I was building this model, I felt confident that the methods I used using only solitary variables would have created a strong enough model. The final score was decent, in fact, but I believe it could have been higher had I taken advantage of investigating variable interactions more closely.
+
+* * *

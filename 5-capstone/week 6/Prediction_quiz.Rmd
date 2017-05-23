@@ -1,0 +1,325 @@
+---
+title: "Capstone Quiz III"
+output: statsr:::statswithr_lab
+---
+
+<div id="instructions">
+Complete all **Exercises**, and submit answers to **Questions** on the Coursera 
+platform.
+</div>
+
+This third and final quiz will deal with model validation and out-of-sample prediction.  The concepts tested here will prove useful for the final peer assessment, which is much more open-ended.
+
+
+In general, we use data to help select model(s) and to estimate parameters, seeking parsimonious models that provide a good fit to the data and have small prediction errors overall. This may lead to models that do very well at predicting on the data used in model building.  However, summaries of predictions  made in the model training period are not completely "honest" because data are often used to select a model that provides a good fit to the observed data, which may not generalize to future data.  A good way to test the assumptions of a model and to realistically compare its predictive performance against other models is to perform out-of-sample validation, which means to withhold some of the sample data from the model training process and then use the model to make predictions for the hold-out data (test data). 
+
+First, let us load the data:
+
+```{r load}
+load("ames_train.Rdata")
+```
+
+
+As in Quiz 2, we are only concerned with predicting the price for houses sold under normal selling conditions, since partial and abnormal sales may have a different generating process altogether.  We ensure that the training data only includes houses sold under normal conditions:
+
+```{r subset, message = FALSE}
+library(dplyr)
+ames_train <- ames_train %>%
+  filter(Sale.Condition == "Normal")
+```
+
+The first few questions will concern comparing the out-of-sample performance of two linear models.  Note that when log-transforming a covariate that can take values equal to zero, a useful trick is to add 1 before transforming the variable (since $\log(0) = -\infty$).
+
+```{r genModels, message = FALSE, results = "hide"}
+library(MASS)
+# Full Model (no variable selection)
+model.full <- lm(log(price) ~ Overall.Qual + log(Garage.Area + 1) +   
+                  log(Total.Bsmt.SF + 1) + Garage.Cars + log(area) + 
+                  Full.Bath + Half.Bath + 
+                  Bedroom.AbvGr + Year.Built + log(X1st.Flr.SF) + 
+                  log(X2nd.Flr.SF + 1) +
+                  log(Lot.Area) +  Central.Air + Overall.Cond,
+                 data = ames_train)
+
+# Model selection using AIC
+model.AIC <- stepAIC(model.full, k = 2)
+```
+
+```{r loadtest}
+load("ames_test.Rdata")
+ames_test <- ames_test
+```
+
+
+1. Use the `predict` function in R to predict log(`price`) in the testing data set (`ames_test`).  Under `model.AIC`, what is the mean predicted price in the testing data set?
+<ol>
+<li> \$12.02 
+<li> \$166,721.30 </li>
+<li> \$172,994.50
+<li> \$177,220.30 
+</ol>
+```{r Q1}
+question1 <- mean(predict(model.AIC, ames_test))
+exp(question1)
+```
+
+\fb{First exponentiate the predictions from `model.AIC` to the `ames_test` and then take the mean.  Remember, that we are modeling log(`price`), not price, so all predictions must be exponentiated.
+
+This question refers to the following learning objective(s):
+Extrapolate a model to out-of sample data.
+}
+
+
+One metric for comparing out-of-sample performance for multiple models is called root mean squared error (RMSE).  Within the context of linear modeling, this involves taking the square root of the mean of the squared residuals.  For example, assuming the dependent variable of interest is `price`, the RMSE for `model.full` is:
+
+```{r rmseExample}
+# Extract Predictions
+predict.full <- exp(predict(model.full, ames_test))
+
+# Extract Residuals
+resid.full <- ames_test$price - predict.full
+
+# Calculate RMSE
+rmse.full <- sqrt(mean(resid.full^2))
+rmse.full
+
+
+predict.fullTr <- exp(predict(model.full, ames_train))
+
+# Extract Residuals
+resid.fullTr <- ames_train$price - predict.fullTr
+
+# Calculate RMSE
+rmse.fullTr <- sqrt(mean(resid.fullTr^2))
+rmse.fullTr
+```
+
+
+```{r}
+# Extract Predictions
+predict.AIC <- exp(predict(model.AIC, ames_test))
+
+# Extract Residuals
+resid.AIC <- ames_test$price - predict.AIC
+
+# Calculate RMSE
+rmse.AIC <- sqrt(mean(resid.AIC^2))
+rmse.AIC
+
+
+# Extract Predictions
+predict.AICTr <- exp(predict(model.AIC, ames_train))
+
+# Extract Residuals
+resid.AICTr <- ames_train$price - predict.AICTr
+
+# Calculate RMSE
+rmse.AICTr <- sqrt(mean(resid.AICT^r2))
+rmse.AICTr
+```
+
+In general, the better the model fit, the lower the RMSE.
+
+2. Which of the following statements is true concerning the RMSE of `model.full` and `model.AIC`?
+<ol>
+<li> When predicting to `ames_train`, the RMSE for `model.full` is higher than the RMSE for `model.AIC`.  However, when predicting to `ames_test`, the RMSE for `model.AIC` is higher.
+<li> When predicting to `ames_train`, the RMSE for `model.AIC` is higher than the RMSE for `model.full`.  However, when predicting to `ames_test`, the RMSE for `model.full` is higher.
+<li> The RMSE for `model.full` is higher than the RMSE for `model.AIC`, regardless of whether `ames_train` or `ames_test` is used for prediction.
+<li> The RMSE for `model.AIC` is higher than the RMSE for `model.full`, regardless of whether `ames_train` or `ames_test` is used for prediction.
+</ol>
+
+```{r Q2}
+summary()
+```
+
+\fb{Use the code given above to calculate the RMSE for `ames_train` and `ames_test` under both `model.AIC` and `model.full`.  Then compare your results.
+
+This question refers to the following learning objective(s):
+Extrapolate a model to out-of sample data.
+Compare the performance of multiple models
+}
+
+3.  True or False: In general, the RMSE for predictions on a training data set will be higher than that for predictions on a testing data set. 
+<ol>
+<li> True
+<li> False
+</ol>
+
+```{r Q3}
+# type your code for Question 3 here, and Knit
+
+```
+
+\fb{Because the model is built to fit the training data, it will generally fit out-of-sample data worse.  As a result, the RMSE for predictions to out-of-sample data will be higher.  
+
+This question refers to the following learning objective(s):
+Extrapolate a model to out-of sample data.
+}
+
+One way to assess how well a model reflects uncertainty is determining coverage probability.  For example, if assumptions are met, a 95\% prediction interval for `price` should include the true value of `price` roughly 95\% of the time.  If the true proportion of out-of-sample prices that fall within the 95\% prediction interval are significantly greater than or less than 0.95, then some assumptions regarding uncertainty may not be met.  To calculate the coverage probability for `model.full`, we do the following:
+
+```{r intervals}
+# Predict prices
+predict.full <- exp(predict(model.full, ames_test, interval = "prediction"))
+
+# Calculate proportion of observations that fall within prediction intervals
+coverage.prob.full <- mean(ames_test$price > predict.full[,"lwr"] &
+                            ames_test$price < predict.full[,"upr"])
+coverage.prob.full
+```
+
+4. Create a new model entitled `model.BIC` that uses BIC to select the covariates from `model.full`.  What is the out-of-sample coverage for `model.BIC`?
+<ol>
+<li> 0.948
+<li> 0.950
+<li> 0.952
+<li> 0.961
+</ol>
+
+```{r Q4}
+model.BIC <- stepAIC(model.full, k = log(nrow(ames_train)))
+```
+
+\fb{Recall that BIC is the same as AIC, except that the penalty parameter $k$ is the log of the sample size rather than 2.  Fit a new linear model using BIC and use the code above to help you extract the out-of-sample coverage.
+
+This question refers to the following learning objective(s):
+Check the assumptions of a linear model.
+Extrapolate a model to out-of sample data.
+
+}
+
+```{r}
+predict.BIC <- exp(predict(model.BIC, ames_test, interval = "prediction"))
+
+
+
+# Calculate proportion of observations that fall within prediction intervals
+coverage.prob.BIC <- mean(ames_test$price > predict.BIC[,"lwr"] &
+                            ames_test$price < predict.BIC[,"upr"])
+coverage.prob.BIC
+```
+
+
+In Course 4, we introduced Bayesian model averaging (BMA), which involves averaging over many possible models.  This can be implemented in the `BAS` R package.  So far, we have focused on performing model selection using BMA. However, BMA can also be used for prediction, averaging predictions from multiple models according to their posterior probabilities.  The next few questions will give you some practice using `BAS` for prediction. 
+
+```{r BMA}
+library(BAS)
+
+# Fit the BAS model
+model.bas <- bas.lm(log(price) ~ Overall.Qual + log(Garage.Area + 1) +   
+                  log(Total.Bsmt.SF + 1) + Garage.Cars + log(area) + 
+                  Full.Bath + Half.Bath + 
+                  Bedroom.AbvGr + Year.Built + log(X1st.Flr.SF) + 
+                  log(X2nd.Flr.SF + 1) +
+                  log(Lot.Area) +  Central.Air + Overall.Cond,
+                 data = ames_train, prior = "AIC", modelprior=uniform())
+```
+
+Within `BAS`, you can predict using four different options: HPM, the highest probability model, MPM, the median probability model, BMA, an average over all the models, and BPM, the single model with predictions closest to those obtained from BMA.  For example, you could run the following command to generate out-of-sample predictions and RMSE for the highest probability model.
+
+```{r genBASpred}
+pred.test.HPM <- predict(model.bas, newdata = ames_test, estimator="HPM")
+pred.HPM.rmse <- sqrt(mean((exp(pred.test.HPM$fit) - ames_test$price)^2))
+pred.HPM.rmse
+```
+
+```{r}
+pred.test.BPM <- predict(model.bas, newdata = ames_test, estimator="BPM")
+pred.BPM.rmse <- sqrt(mean((exp(pred.test.BPM$fit) - ames_test$price)^2))
+pred.BPM.rmse
+```
+
+```{r}
+pred.test.BAS <- predict(model.bas, newdata = ames_test)
+pred.BAS.rmse <- sqrt(mean((exp(pred.test.BAS$fit) - ames_test$price)^2))
+pred.BAS.rmse
+```
+
+
+5. Which of the following prediction methods has the smallest out-of-sample RMSE?
+<ol>
+<li> HPM
+<li> BPM
+<li> BMA
+</ol>
+
+```{r Q5}
+# type your code for Question 5 here, and Knit
+
+```
+
+\fb{For each of the four prediction methods mentioned above, use similar code exhibited in the above block to find the RMSE for each.  Then compare the models.
+
+This question refers to the following learning objective(s):
+Extrapolate a model to out-of sample data.
+Implement Bayesian model averaging for both prediction and variable selection.
+}
+
+To obtain out-of-sample prediction intervals and coverage for the highest probability model, we can execute the following command:
+
+```{r basPredictInterval}
+pred.test.HPM <- predict(model.bas, ames_test, 
+                    estimator="HPM", 
+                    prediction=TRUE, se.fit=TRUE)
+
+# Get dataset of predictions and confidence intervals
+out = as.data.frame(cbind(exp(confint(pred.test.HPM)),
+                          price = ames_test$price))
+
+# Fix names in dataset
+colnames(out)[1:2] <- c("lwr", "upr")  #fix names
+
+# Get Coverage
+pred.test.HPM.coverage <- out %>% summarize(cover = sum(price >= lwr & price <= upr)/n())
+pred.test.HPM.coverage
+```
+
+
+6.  Using the median probability model to generate out-of-sample predictions and a 95\% prediction interval, what proportion of observations (rows) in `ames_test` have sales prices that fall outside the prediction intervals?   
+<ol>
+<li> 0.048
+<li> 0.049
+<li> 0.050
+<li> 0.051
+</ol>
+
+```{r Q6}
+# type your code for Question 6 here, and Knit
+
+```
+
+\fb{Implement the code run in the previous block, using `MPM` instead of `HPM`, to generate predictions and 95\% prediction intervals.  Count the number of observations in `ames_test` that fall outside the prediction intervals.
+
+This question refers to the following learning objective(s):
+Extrapolate a model to out-of sample data.
+Implement Bayesian model averaging for both prediction and variable selection.
+}
+
+Plotting residuals versus the predicted values or other predictors can provide insight into where the model may not be optimal. 
+
+```{r plotMPMresid}
+pred.test.MPM <- predict(model.bas, ames_test, 
+                    estimator="MPM", 
+                    prediction=TRUE, se.fit=TRUE)
+resid.MPM = ames_test$price - exp(pred.test.MPM$fit)
+plot(ames_test$price, resid.MPM, 
+     xlab="Price",
+     ylab="Residuals")
+```
+
+
+7. True or False: The median probability model has a tendency to over-predict prices for the most expensive houses.
+<ol>
+<li> True
+<li> False
+</ol>
+
+\fb{Interpret the plot above.  Do the most expensive homes in the test dataset have high or low residuals?  What does that mean about whether our model over-predicts or under-predicts housing prices?
+
+This question refers to the following learning objective(s):
+Extrapolate a model to out-of sample data.
+}
+
+### Summary
+Holding data out for a final "validation"" purposes is probably the single most important diagnostic test of a model: it gives the best indication of the accuracy that can be expected when predicting the future.  If we commit to a particular model and then compare its prediction accuracy on the test data, we have an honest assessment of its future performance.  However, in practice, if you are finding that you are using the results from the predictions on the test set to refine your final model, then this test data has in essence become part of the training data, and there is a danger as with the training data that the best model may be over-state its predictive accuracy. This has led many practioners to create a third hold-out sample  or validation dataset to provide a final summary of the expected prediction accuracy.  
+
